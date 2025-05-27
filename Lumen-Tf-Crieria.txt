@@ -1,0 +1,572 @@
+Terraform Module Catalog 
+
+Align on:  
+
+    Definition of done 
+
+    Usage Patterns 
+
+    Initial set of customer specific modules 
+
+    Timelines 
+
+ 
+
+Criterion 
+	
+
+Description 
+	
+
+Mechanism 
+
+Alignment with Best Practices 
+	
+
+Enforces enterprise standards for consistency and governance. 
+ Security: Encryption, least-privilege access 
+ Compliance: Meets regulatory and internal policies 
+
+https://developer.hashicorp.com/terraform/language/modules/develop/structure 
+	
+
+Smart Defaults 
+ Environmental "Lookup" mechanisms 
+ Terraform resource tagging 
+ Terraform `validation` 
+ Terraform sub modules (as appropriate) 
+
+Functionality and Coverage 
+	
+
+80% coverage of application patterns 
+ 
+ 
+VM - EC2 (Linux, Windows) 
+DB - EC2 (Database) 
+DB - RDS (Non-oracle) 
+K8 - AWS EKS 
+IAM - IAM Roles (for application teams to provision) 
+Secretes Management - AWS Secrets Management 
+DNS Integration - (AWS Route53) 
+Load Balancing (L4 and L7) •AWS Load Balancer 
+Backup • Backup integration (AWS Backup/Commvault) 
+Object Store •AWS S3 Bucket 
+Encryption Keys •AWS Key Management Service 
+Monitoring - •AWS CloudWatch config 
+	
+
+Roadmap planning with Migration workstream and application teams as part of intake 
+ Establish baseline resources 
+ Control "aware" code (i.e. SCPs) 
+
+Consumption Pattern 
+	
+
+Pull requests? 
+Direct Reference? 
+	
+
+ 
+
+Usability 
+	
+
+Clear Documentation/README 
+ Usage examples IN THE LUMEN Environment 
+ Minimal Config to deploy via CICD 
+ Usable in ANY workload account 
+ Option for overrides 
+	
+
+Smart Defaults 
+ Environmental "Lookup" mechanisms 
+ Terraform resource tagging 
+ Terraform `validation` 
+ Control "aware" code (i.e. SCPs) 
+
+Performance/Scalability 
+	
+
+Ensures modules meet performance needs and scale effectively. 
+
+Tested for latency/throughput. 
+
+Supports auto-scaling, load balancing. 
+
+Aligns with enterprise growth. 
+	
+
+Smart Default 
+ Terraform variables 
+
+Cost efficiency 
+	
+
+Helps manage and optimize cloud spending. 
+
+Cost-saving: Spot instances, shutdowns. 
+ Monitoring: Outputs for cost tracking. 
+ Prevents overruns with limits 
+	
+
+Smart Defaults 
+ Disabling highly costly configuration 
+ Terraform `validation` 
+
+Operational Excellence 
+	
+
+Integrates with existing operational teams and processes 
+ Monitoring: Integrates with enterprise tools. 
+ Logging: Centralized and accessible 
+ Automation: Reduces manual tasks 
+	
+
+Terraform resource tagging 
+ Terraform sub modules (as appropriate) 
+
+Maintainability and support model 
+	
+
+Keeps catalog viable with minimal overhead 
+ Regular updates for CSP changes 
+ Defined support process 
+ Avoids orphaned modules 
+	
+
+Git tagging 
+
+Version pinning 
+
+Terraform private registry 
+ CCOE/Proserve staffing plan 
+ Guidance for people contributing 
+
+Start from public modules 
+
+Integration with Existing Tools 
+	
+
+Fits into the enterprise ecosystem seamlessly 
+ Works with CI/CD 
+	
+
+CMDB integration automation 
+ Monitoring integration 
+ Ansible tower integration 
+ 
+
+Cloud Consistency 
+	
+
+Provides unified* experience across CSPs. 
+Consistent inputs/outputs 
+Uniform naming conventions. 
+Balances cloud-specific differences. 
+	
+
+CCOE to establish guidelines to account for CSP specific differences and level of effort 
+ 
+
+ 
+
+ 
+
+AWS Terraform Modules Contribution Guide 
+
+Overview 
+
+This comprehensive guide outlines best practices for creating high-quality, reusable Terraform modules for AWS. It ensures consistency, safety, and flexibility in module contributions. 
+
+Understanding the Cloud Environment 
+
+Here is the Terraform modules “Contract” with the environment/CICD pipeline 
+
+CCOE provide CICD Pipeline will make available Lumen Authorized Terraform modules, handle AWS Credentials and deployment into target account 
+
+AWS 
+
+    Networking (VPC, subnets, common security group will be in place with standard naming/platform tags) 
+
+    Modules will take guardrails into account 
+
+    Modules are simple to start, but allow for customization for more advanced use-cases 
+
+    Minimize local sub-modules modules and use the https://github.com/CenturyLink/tf-modules--aws-tf-modules modules 
+
+    Modules must be written to take into account resource risk, sharing, and segregation of duties 
+
+    Modules for Application Patterns (not just basic resources) will be written in “stacks” including related resources as a group 
+
+    Modules for Application Patterns may have a “prerequisite stack” that need to be deployed once per account 
+
+ Picture 796069724, PicturePicture 1474841400, Picture 
+
+Module Structure 
+
+https://developer.hashicorp.com/terraform/language/modules/develop/structure 
+
+ 
+
+   my-module/ 
+├── main.tf           # Core resource definitions 
+
+├──<feature>.tf #Additional functionality (not just different resource) 
+├── variables.tf      # Input variables 
+├── outputs.tf        # Output values 
+├── versions.tf       # Version requirements 
+├── README.md        # Documentation 
+├── examples/        # Usage examples 
+│   └── simple_usage/ 
+│       └── main.tf 
+└── test/           # Automated tests 
+    └── test_module.go 
+ 
+     
+
+Required Files 
+
+    main.tf: Contains primary resource definitions and is extended by <feature>.tf to avoid becoming unwieldy 
+
+    <feature>.tf: Added as needed contains sets of resources that enable  
+
+    variables.tf: Defines input variables with descriptions 
+
+    outputs.tf: Specifies output values 
+
+    versions.tf: Declares required versions 
+
+    README.md: Comprehensive documentation 
+
+    examples/: Sample configurations 
+
+    test/: Automated tests (optional) 
+
+Smart Non-Destructive Defaults 
+
+Hard coded best practices 
+
+In order to ensure that infrastructure deployments adhere to Lumen security requirements and best practices, it will be necessary to prevent application teams from making obviously noncompliant configurations. To address this, some terraform options will need to be hard-coded (i.e. non-overwritable). 
+
+e.g.  
+
+module “eks” { 
+
+... 
+
+cluster_endpoint_public_access = false #so that users cannot inadvertently create a public endpoint which is contrary to Lumen security requirements 
+
+} 
+
+ 
+
+ 
+
+Opt-Out Resource Creation 
+
+variable "create_instance" { 
+  description = "Whether to create an EC2 instance" 
+  type        = bool 
+  default     = false 
+} 
+ 
+
+variable “ignore_ami_changes” { 
+
+  type = bool 
+
+  default = true 
+
+} 
+     
+
+Secure Defaults 
+
+   variable "ingress_rules" { 
+  description = "List of ingress rules for the security group" 
+  type        = list(object({ 
+    from_port   = number 
+    to_port     = number 
+    protocol    = string 
+    cidr_blocks = list(string) 
+  })) 
+  default     = []  # No ingress allowed by default 
+} 
+ 
+     
+
+Resource Creation Control 
+
+   variable "bucket_name" { 
+  description = "Name of the S3 bucket (if null, no bucket is created)" 
+  type        = string 
+  default     = null 
+} 
+ 
+resource "aws_s3_bucket" "example" { 
+  count  = var.bucket_name != null ? 1 : 0 
+  bucket = var.bucket_name 
+} 
+ 
+
+    
+
+Environment Lookups 
+
+e.g. VPC and Subnet Lookups 
+
+Instead of requiring foundation components be known ahead of time and input in variables (i.e. vpc_id for compute resources), baseline components shall be discoverable 
+
+ 
+data "aws_vpc" "selected" { 
+  filter { 
+    name   = "tag:platform:vpc-type" 
+    values = [“shared”] 
+  } 
+} 
+ 
+data "aws_subnet" "selected" { 
+  filter { 
+    name   = "tag:platform:vpc-type" 
+    values = [var.private_non_private] 
+  } 
+  vpc_id = data.aws_vpc.selected.id 
+} 
+     
+
+e.g. Compute Image Lookups 
+
+data "aws_ami" "golden_ami" { 
+  executable_users = ["self"] 
+  most_recent      = true 
+  owners           = ["self"] 
+ 
+  filter { 
+    name   = "name" 
+    values = ["${var.os}-*"] # Where var.os is Rocky, Ubuntu, Windows, etc 
+  } 
+ 
+  filter { 
+    name   = "virtualization-type" 
+    values = ["hvm"] 
+  } 
+} 
+ 
+     
+
+Optional creation of ALL required subcomponents 
+
+If a resource has other resources that must exist before the resource is created (e.g. EC2 instance requiring a security group, RDS requiring a subnet group. The module must contain (optional “count” creation) of all of the prerequisite resources (to allow for atomic deployments) if an existing resource cannot be imported (or looked up, i.e. VPCs) 
+
+Enhanced Best Practices 
+
+1. Validation and Constraints 
+
+   variable "instance_type" { 
+  description = "EC2 instance type" 
+  type        = string 
+
+  default  = t3.large  
+  validation { 
+    condition     = can(regex("^t[23]|m[456]|c[56]", var.instance_type)) 
+    error_message = "Invalid instance type. Must be a valid AWS instance type." 
+  } 
+} 
+ 
+     
+
+2. Standardized Tagging 
+
+   variable "tags" { 
+  description = "Map of tags to apply to all resources" 
+  type        = map(string) 
+  default     = {} 
+} 
+ 
+locals { 
+  default_tags = { 
+    Environment = var.environment 
+    ManagedBy  = "terraform" 
+    Project    = var.project_name 
+  } 
+  merged_tags = merge(local.default_tags, var.tags) 
+} 
+ 
+
+Note: mal_id must be included 
+     
+
+3. Version Control 
+
+   terraform { 
+  required_version = ">= 1.0.0, < 2.0.0" 
+  required_providers { 
+    aws = { 
+      source  = "hashicorp/aws" 
+      version = "~> 4.0" 
+    } 
+  } 
+} 
+ 
+     
+
+4. Resource Naming Convention 
+
+   locals { 
+  name_prefix = "${var.project}-${var.environment}" 
+   
+  resource_names = { 
+    instance = "${local.name_prefix}-instance" 
+    sg       = "${local.name_prefix}-sg" 
+    role     = "${local.name_prefix}-role" 
+  } 
+} 
+
+4a. Resource Naming Convention 
+
+   For resources that can only be created once (S3 buckets, IAM roles, etc), uids must be included as part of their naming convention to prevent collisions (or count = 0 logic if an existing one is being used 
+     
+
+5. Error Handling 
+
+   locals { 
+  is_valid_config = var.vpc_id != "" && var.subnet_id != "" 
+  precondition_error = !local.is_valid_config ? file("ERROR: Invalid configuration") : null 
+} 
+ 
+     
+
+Documentation Requirements 
+
+README.md Template 
+
+   # Module Name 
+ 
+## Description 
+[Module purpose and functionality] 
+ 
+## Prerequisites 
+[Required setup and dependencies] 
+ 
+## Usage 
+[Basic usage examples] 
+ 
+## Variables 
+[Input variables description] 
+ 
+## Outputs 
+[Output values description] 
+ 
+## Examples 
+[Detailed usage examples] 
+ 
+## Contributing 
+[Contribution guidelines] 
+ 
+ 
+     
+
+Additional Guidelines 
+
+Security Baseline 
+
+    Implement encryption at rest 
+
+    Use IAM roles with least privilege 
+
+    Enable VPC flow logs 
+
+    Implement security group rules conservatively 
+
+    Enable AWS CloudTrail logging 
+
+Cost Optimization 
+
+    Use cost allocation tags 
+
+    Implement auto-scaling where appropriate 
+
+    Consider reserved instances for stable workloads 
+
+    Enable lifecycle policies for storage 
+
+    Implement instance scheduling for non-production 
+
+Testing Requirements 
+
+    Unit tests using checkov/wizio 
+
+    Must be deployable into any standard “workload” account 
+
+    Integration tests 
+
+    Compliance tests 
+
+    Security scanning 
+
+    Cost estimation tests 
+
+Code Quality 
+
+    Follow Terraform style guide 
+
+    Use consistent naming conventions 
+
+    Implement proper error handling 
+
+    Include meaningful comments 
+
+    Regular security updates 
+
+Contribution Workflow 
+
+    Fork the repository 
+
+    Create a feature branch 
+
+    Implement changes 
+
+    Add tests 
+
+    Update documentation 
+
+    Submit pull request 
+
+    Address review comments 
+
+    Merge after approval 
+
+    Create git tag 
+
+Module Development Checklist 
+
+    [ ] Required files present 
+
+    [ ] Architectural Diagram 
+
+    [ ] Variables properly documented 
+
+    [ ] Outputs defined 
+
+    [ ] README complete 
+
+    [ ] Examples provided 
+
+    [ ] Tests implemented 
+
+    [ ] Wiz.io/checkov scan 
+
+    [ ] Security baseline met 
+
+    [ ] Cost optimization considered 
+
+    [ ] Version constraints set 
+
+    [ ] Tags implemented 
+
+    [ ] Create git tag (Inline with https://semver.org/) 
+
+This guide provides a framework for creating consistent, secure, and maintainable Terraform modules. Follow these practices to ensure high-quality contributions to the AWS infrastructure codebase. 
+
+ 
