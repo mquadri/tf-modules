@@ -1,0 +1,37 @@
+<!-- BEGIN_TF_DOCS -->
+## Requirements
+
+| Name | Version |
+|------|---------|
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.6.6, < 2.0.0 |
+| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | >= 3.11.1, < 4.0.0 |
+
+## Providers
+
+No providers.
+
+## Modules
+
+| Name | Source | Version |
+|------|--------|---------|
+| <a name="module_avm-res-desktopvirtualization-hostpool"></a> [avm-res-desktopvirtualization-hostpool](#module\_avm-res-desktopvirtualization-hostpool) | Azure/avm-res-desktopvirtualization-hostpool/azurerm | 0.2.1 |
+
+## Resources
+
+No resources.
+
+## Inputs
+
+| Name | Description | Type | Default | Required |
+|------|-------------|------|---------|:--------:|
+| <a name="input_avd_host_pools"></a> [avd\_host\_pools](#input\_avd\_host\_pools) | Map of AVD host pool configurations. | <pre>map(object({<br>    virtual_desktop_host_pool_name                  = string<br>    virtual_desktop_host_pool_location              = string<br>    virtual_desktop_host_pool_type                  = string<br>    virtual_desktop_host_pool_resource_group_name   = string<br>    virtual_desktop_host_pool_load_balancer_type    = string<br>    virtual_desktop_host_pool_custom_rdp_properties = optional(string, null)<br><br>    virtual_desktop_host_pool_vm_template = object({<br>      type = string<br>      custom_image = optional(object({<br>        resource_id = string<br>      }), null)<br>      gallery_image_reference = optional(object({<br>        offer     = string<br>        publisher = string<br>        sku       = string<br>        version   = string<br>      }), null)<br>      osDisktype = string<br>    })<br><br>    virtual_desktop_host_pool_scheduled_agent_updates = optional(object({<br>      enabled = optional(bool, false)<br>      schedule = optional(list(object({<br>        day_of_week = string<br>        hour_of_day = number<br>      })), [])<br>    }), null)<br><br>    virtual_desktop_host_pool_description                      = optional(string, null)<br>    virtual_desktop_host_pool_friendly_name                    = optional(string, null)<br>    virtual_desktop_host_pool_maximum_sessions_allowed         = optional(number, 0)<br>    virtual_desktop_host_pool_personal_desktop_assignment_type = optional(string, null)<br>    virtual_desktop_host_pool_preferred_app_group_type         = optional(string, null)<br>    virtual_desktop_host_pool_start_vm_on_connect              = optional(bool, false)<br>    virtual_desktop_host_pool_validate_environment             = optional(bool, false)<br>    virtual_desktop_host_pool_tags                             = optional(map(string), {})<br><br>    virtual_desktop_host_pool_timeouts = optional(object({<br>      create = optional(string, "60m")<br>      delete = optional(string, "60m")<br>      read   = optional(string, "5m")<br>      update = optional(string, "60m")<br>    }), null)<br><br>    # Nested existing variables inside the map of objects<br>    resource_group_name = string<br><br>    diagnostic_settings = map(object({<br>      name                                     = optional(string, null)<br>      log_categories                           = optional(set(string), [])<br>      log_groups                               = optional(set(string), ["allLogs"])<br>      metric_categories                        = optional(set(string), ["AllMetrics"])<br>      log_analytics_destination_type           = optional(string, "Dedicated")<br>      workspace_resource_id                    = optional(string, null)<br>      storage_account_resource_id              = optional(string, null)<br>      event_hub_authorization_rule_resource_id = optional(string, null)<br>      event_hub_name                           = optional(string, null)<br>      marketplace_partner_resource_id          = optional(string, null)<br>    }))<br><br>    enable_telemetry = bool<br><br>    lock = object({<br>      kind = string<br>      name = optional(string, null)<br>    })<br><br>    private_endpoints = map(object({<br>      name = optional(string, null)<br>      role_assignments = optional(map(object({<br>        role_definition_id_or_name             = string<br>        principal_id                           = string<br>        description                            = optional(string, null)<br>        skip_service_principal_aad_check       = optional(bool, false)<br>        condition                              = optional(string, null)<br>        condition_version                      = optional(string, null)<br>        delegated_managed_identity_resource_id = optional(string, null)<br>        principal_type                         = optional(string, null)<br>      })), {})<br>      lock = optional(object({<br>        name = optional(string, null)<br>        kind = string<br>      }), null)<br>      tags                                    = optional(map(string), null)<br>      subnet_resource_id                      = string<br>      private_dns_zone_group_name             = optional(string, "default")<br>      private_dns_zone_resource_ids           = optional(set(string), [])<br>      application_security_group_associations = optional(map(string), {})<br>      private_service_connection_name         = optional(string, null)<br>      network_interface_name                  = optional(string, null)<br>      location                                = optional(string, null)<br>      resource_group_name                     = optional(string, null)<br>      ip_configurations = optional(map(object({<br>        name               = string<br>        private_ip_address = string<br>      })), {})<br>    }))<br><br>    registration_expiration_period = string<br><br>    role_assignments = map(object({<br>      role_definition_id_or_name             = string<br>      principal_id                           = string<br>      description                            = optional(string, null)<br>      skip_service_principal_aad_check       = optional(bool, false)<br>      condition                              = optional(string, null)<br>      condition_version                      = optional(string, null)<br>      delegated_managed_identity_resource_id = optional(string, null)<br>      principal_type                         = optional(string, null)<br>    }))<br><br>    tags = optional(map(string), {})<br><br>    tracing_tags_enabled = bool<br>    tracing_tags_prefix  = string<br>  }))</pre> | n/a | yes |
+
+## Outputs
+
+| Name | Description |
+|------|-------------|
+| <a name="output_private_endpoints"></a> [private\_endpoints](#output\_private\_endpoints) | A map of private endpoints. The map key is the supplied input to var.private\_endpoints. The map value is the entire azurerm\_private\_endpoint resource. |
+| <a name="output_registrationinfo_token"></a> [registrationinfo\_token](#output\_registrationinfo\_token) | The token for the host pool registration. |
+| <a name="output_resource"></a> [resource](#output\_resource) | This output is the full output for the resource to allow flexibility to reference all possible values for the resource. Example usage: module.<modulename>.resource.id |
+| <a name="output_resource_id"></a> [resource\_id](#output\_resource\_id) | The ID of the Virtual Desktop Host Pool. |
+<!-- END_TF_DOCS -->

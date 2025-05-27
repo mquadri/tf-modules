@@ -1,0 +1,174 @@
+name: Module Document and Sanitize
+on:
+  workflow_call:
+    inputs:
+      environment:
+        type: string
+        description: "Environment"
+        required: true
+      directories:
+        type: string
+        required: true
+      runner_group:
+        type: string
+        default: "AZ-GHAL-NONPROD-EUS2"
+
+    secrets:
+      WIZ_CLIENT_ID:
+        required: true
+      WIZ_CLIENT_SECRET:
+        required: true
+      APP_PRIVATE_KEY:
+        required: true
+
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  module-check:
+    name: "Module Sanitize"
+    runs-on:
+      group: ${{ inputs.runner_group }}
+    environment: ${{ inputs.environment }}
+
+    steps:
+      - name: Git Config
+        run: |
+          git config --global --add safe.directory $GITHUB_WORKSPACE
+
+      - name: Generate a token
+        id: generate-token
+        uses: actions/create-github-app-token@3ff1caaa28b64c9cc276ce0a02e2ff584f3900c5 #v2.0.2
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ steps.generate-token.outputs.token }}
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
+
+      - name: List Environment Variables
+        run: env
+
+      - name: Terraform Installer
+        uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd #v3.1.2
+        env:
+          GITHUB_TOKEN: ${{ steps.generate-token.outputs.token }}
+
+      - name: Get GitHub App User ID
+        id: get-user-id
+        run: echo "user-id=$(gh api "/users/${APP_SLUG}[bot]" --jq .id)" >> "$GITHUB_OUTPUT"
+        env:
+          GH_TOKEN: ${{ steps.generate-token.outputs.token }}
+          APP_SLUG: ${{ steps.generate-token.outputs.app-slug }}
+      - name: Set Git Config APP
+        id: set-git-config
+        env:
+          USER_ID: ${{ steps.get-user-id.outputs.user-id }}
+          APP_SLUG: ${{ steps.generate-token.outputs.app-slug }}
+        run: |
+          git config --global user.name "${APP_SLUG}[bot]"
+          git config --global user.email "${USER_ID}+${APP_SLUG}[bot]@users.noreply.github.com"
+
+      - name: Covert to comma separated list of directories
+        id: get-directories
+        env:
+          DIRECTORIES: ${{ inputs.directories }}
+        run: | 
+          directories=$(echo "${DIRECTORIES}" | jq '[.[] | .directory] | join(",")' -r)
+          echo "csv_directories=${directories}" >> $GITHUB_OUTPUT
+        shell: bash
+
+      - name: Render terraform docs and push changes back to PR
+        uses: terraform-docs/gh-actions@7f8a667921aee9dd89af0f3c6dfa6160d7ebd8bb # v1.4.0
+        with:
+          working-dir: "${{ steps.get-directories.outputs.csv_directories }}"
+          output-file: README.md
+          output-method: inject
+          git-push: "false"
+          output-format: markdown document
+          git-push-sign-off: true
+
+      - name: Format terraform files
+        id: format-terraform
+        env:
+          DIRECTORIES: ${{ inputs.directories }}
+        run: |
+          terraform fmt $(echo "${DIRECTORIES}" | jq '[.[] | .directory] | join(" ")' -r)
+
+      - name: Dump directories
+        id: dump-directory
+        env:
+          DIRECTORIES: ${{ inputs.directories }}
+        run: |
+          set -xeuo pipefail
+          echo "dir_count=$(git status -s | cut -c4- | wc -l)" >> $GITHUB_OUTPUT
+          echo "directories=$(git status -s | cut -c4- | tr '\n' ',')" >> $GITHUB_OUTPUT
+
+      - name: Commit changes (API)
+        uses: actions/github-script@v6
+        if: steps.dump-directory.outputs.dir_count != '0'
+        env:
+          DIRECTORIES: ${{ steps.get-directories.outputs.csv_directories }}
+          ALL_CHANGED_FILES: ${{ steps.dump-directory.outputs.directories }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+        with:
+          github-token: ${{ steps.generate-token.outputs.token }}
+          script: |
+            const fs = require('fs');
+
+            // Add the modified files to treeObjs.
+            const treeObjs = [];
+            const headSha = process.env.HEAD_SHA;
+            const headRef = process.env.HEAD_REF;
+            for (const file of process.env.ALL_CHANGED_FILES.split(',')) {
+              if (file === '') continue;
+              console.log(`File: ${file}`);
+              const stat = fs.statSync(file);
+              if (!stat.isFile()) continue;
+              const content = fs.readFileSync(file, { encoding: 'utf8' });
+
+              treeObjs.push({
+                path: file,
+                mode: stat.mode.toString(8),
+                type: 'blob',
+                content: content
+              });
+            }
+            if (treeObjs.length < 1) {
+              console.log('No files to upload');
+              return;
+            }
+            const commitData = await github.rest.git.getCommit({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              commit_sha: headSha,
+            })
+            const tree = await github.rest.git.createTree({
+              ...context.repo,
+              tree: treeObjs,
+              base_tree: commitData.data.tree.sha,
+            });
+
+            // Create a commit for the tree. This will be signed automatically.
+
+            const gitCommit = await github.rest.git.createCommit({
+              ...context.repo,
+              message: 'docs: [skip ci] terraform-docs update',
+              tree: tree.data.sha,
+              parents: [ headSha ],
+            });
+
+            // Update the branch HEAD to the new commit.
+            const ref = await github.rest.git.updateRef({
+              ...context.repo,
+              ref: `heads/${headRef}`,
+              sha: gitCommit.data.sha,
+            });

@@ -1,0 +1,86 @@
+name: "Module PR Validation"
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - synchronize
+      - reopened
+    paths-ignore:
+      - '.github/**'  
+      - '.gitignore'  
+      - 'README*'       
+      - '/*.yml'        
+      - '/*.yaml'
+      - '/*.txt'
+
+
+
+jobs:
+  generate-folder-names:
+    name: pr create
+    runs-on:
+      group: AZ-GHAL-NONPROD-EUS2
+
+    outputs:
+      matrix: ${{ steps.generate-matrix.outputs.directory-matrix }}
+    steps:
+      - name: Generate a token
+        id: generate-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Find Terragrunt Changes
+        id: find-terragrunt-changes
+        uses: tj-actions/changed-files@823fcebdb31bb35fdf2229d9f769b400309430d0 #v46
+        with:
+          dir_names: "true"
+          files_ignore: |
+                   **.md
+
+        continue-on-error: true
+
+      - name: Generate Matrix
+        if: ${{ steps.find-terragrunt-changes.outputs.all_changed_files }}
+        uses: CenturyLink/tf-modules-azure/.github/actions/generate-terragrunt-changes-matrix@main
+        id: generate-matrix
+        with:
+          directories: ${{ steps.find-terragrunt-changes.outputs.all_changed_files }}
+
+
+  module-verify:
+    # if: fromJson(needs.generate-folder-names.outputs.matrix).test-module != ''
+    needs:
+      - generate-folder-names
+    name: Module Verify 
+    uses: CenturyLink/tf-modules-azure/.github/workflows/module-verify.yml@main
+    # uses: ./.github/workflows/module-verify.yml
+
+    with:
+      environment: nonprod
+      directories: ${{ toJson(fromJson(needs.generate-folder-names.outputs.matrix)) }}
+    secrets: inherit
+
+
+  module-sanitize:
+    needs:
+      - generate-folder-names
+      - module-verify
+    name: Module Sanitize
+    uses: CenturyLink/tf-modules-azure/.github/workflows/module-sanitize.yml@main
+    # uses: ./.github/workflows/module-sanitize.yml
+    with:
+      environment: nonprod
+      directories: ${{ toJson(fromJson(needs.generate-folder-names.outputs.matrix)) }}
+      runner_group: AZ-GHAL-NONPROD-EUS2
+    secrets: inherit

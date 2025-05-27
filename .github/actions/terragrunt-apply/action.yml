@@ -1,0 +1,43 @@
+
+name: Terragrunt Apply
+description: Terragrunt Apply
+
+runs:
+  using: composite
+  steps:
+    - uses: azure/login@v2
+      with:
+        creds: '{"clientId":"${{ env.ARM_CLIENT_ID }}","clientSecret":"${{ env.ARM_CLIENT_SECRET }}","tenantId":"${{ env.ARM_TENANT_ID }}"}'
+        allow-no-subscriptions: true
+      
+    - name: Generate a token
+      id: generate-token
+      uses: actions/create-github-app-token@v1
+      with:
+        app-id: ${{ inputs.app-id }}
+        private-key: ${{ inputs.private-key }}
+        owner: ${{ github.repository_owner }}
+      
+    - name: github private repo access
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ steps.generate-token.outputs.token }}
+      run: git config --global url."https://x-access-token:${GITHUB_TOKEN}@github.com".insteadOf https://github.com
+    
+    - name: "Terragrunt Init, Validate and Plan"
+      shell: bash
+      working-directory: "./${{ inputs.work-dir }}"
+      run: |
+        set -xeuo pipefail
+        terragrunt init --terragrunt-non-interactive
+        terragrunt run-all validate --terragrunt-ignore-dependency-errors
+
+        terragrunt run-all plan -no-color -input=false -out tfplan --terragrunt-ignore-dependency-errors
+
+    - name: "Terragrunt Apply"
+      shell: bash
+      working-directory: "./${{ inputs.work-dir }}"
+      env:
+        TERRAGRUNT_NON_INTERACTIVE: true
+      run: |
+        terragrunt run-all apply -no-color tfplan --terragrunt-ignore-dependency-errors

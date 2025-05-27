@@ -1,0 +1,138 @@
+
+Terraform used the selected providers to generate the following execution
+plan. Resource actions are indicated with the following symbols:
+  [32m+[0m create[0m
+  [33m~[0m update in-place[0m
+  [31m-[0m destroy[0m
+
+Terraform will perform the following actions:
+
+[1m  # module.pim-team-elegible-example.azurerm_pim_eligible_role_assignment.this["sub-group-lcai-contributor-az_contributor"][0m will be created
+[0m  [32m+[0m[0m resource "azurerm_pim_eligible_role_assignment" "this" {
+      [32m+[0m[0m id                 = (known after apply)
+      [32m+[0m[0m justification      = (known after apply)
+      [32m+[0m[0m principal_id       = "29d13aec-2221-473c-a550-d12d270b300b"
+      [32m+[0m[0m principal_type     = (known after apply)
+      [32m+[0m[0m role_definition_id = "/subscriptions/0eeb1f61-1ac0-4249-9dfc-b716ad2dfa7b/providers/Microsoft.Authorization/roleDefinitions/b24988ac-6180-42a0-ab88-20f7382dd24c"
+      [32m+[0m[0m scope              = "/subscriptions/0eeb1f61-1ac0-4249-9dfc-b716ad2dfa7b"
+
+      [32m+[0m[0m schedule {
+          [32m+[0m[0m start_date_time = "2024-11-18T14:27:54Z"
+
+          [32m+[0m[0m expiration {
+              [32m+[0m[0m duration_days  = 180
+              [32m+[0m[0m duration_hours = (known after apply)
+              [32m+[0m[0m end_date_time  = (known after apply)
+            }
+        }
+
+      [32m+[0m[0m ticket (known after apply)
+    }
+
+[1m  # module.pim-team-elegible-example.azurerm_role_management_policy.this["sub-policy-lcai-contributor"][0m will be updated in-place
+[0m  [33m~[0m[0m resource "azurerm_role_management_policy" "this" {
+        id                 = "/providers/Microsoft.Authorization/roleDefinitions/b24988ac-6180-42a0-ab88-20f7382dd24c|/subscriptions/0eeb1f61-1ac0-4249-9dfc-b716ad2dfa7b"
+        name               = "68910be9-725c-4fc5-902a-97cfbae74d16"
+        [90m# (3 unchanged attributes hidden)[0m[0m
+
+      [33m~[0m[0m activation_rules {
+            [90m# (6 unchanged attributes hidden)[0m[0m
+
+          [31m-[0m[0m approval_stage {
+            }
+        }
+
+        [90m# (3 unchanged blocks hidden)[0m[0m
+    }
+
+[1m  # module.pim-team-elegible-example.azurerm_role_management_policy.this["sub-policy-lcai-owner"][0m will be [1m[31mdestroyed[0m
+  # (because key ["sub-policy-lcai-owner"] is not in for_each map)
+[0m  [31m-[0m[0m resource "azurerm_role_management_policy" "this" {
+      [31m-[0m[0m id                 = "/providers/Microsoft.Authorization/roleDefinitions/8e3af657-a8ff-443c-a75c-2fe8c4bcb635|/subscriptions/0eeb1f61-1ac0-4249-9dfc-b716ad2dfa7b" [90m-> null[0m[0m
+      [31m-[0m[0m name               = "ea0767e5-b8a6-4648-8ec2-55d38647db71" [90m-> null[0m[0m
+      [31m-[0m[0m role_definition_id = "/providers/Microsoft.Authorization/roleDefinitions/8e3af657-a8ff-443c-a75c-2fe8c4bcb635" [90m-> null[0m[0m
+      [31m-[0m[0m scope              = "/subscriptions/0eeb1f61-1ac0-4249-9dfc-b716ad2dfa7b" [90m-> null[0m[0m
+        [90m# (1 unchanged attribute hidden)[0m[0m
+
+      [31m-[0m[0m activation_rules {
+          [31m-[0m[0m maximum_duration                                   = "PT8H" [90m-> null[0m[0m
+          [31m-[0m[0m require_approval                                   = false [90m-> null[0m[0m
+          [31m-[0m[0m require_justification                              = true [90m-> null[0m[0m
+          [31m-[0m[0m require_multifactor_authentication                 = true [90m-> null[0m[0m
+          [31m-[0m[0m require_ticket_info                                = false [90m-> null[0m[0m
+            [90m# (1 unchanged attribute hidden)[0m[0m
+
+          [31m-[0m[0m approval_stage {
+            }
+        }
+
+      [31m-[0m[0m active_assignment_rules {
+          [31m-[0m[0m expiration_required                = false [90m-> null[0m[0m
+          [31m-[0m[0m expire_after                       = "P365D" [90m-> null[0m[0m
+          [31m-[0m[0m require_justification              = true [90m-> null[0m[0m
+          [31m-[0m[0m require_multifactor_authentication = true [90m-> null[0m[0m
+          [31m-[0m[0m require_ticket_info                = false [90m-> null[0m[0m
+        }
+
+      [31m-[0m[0m eligible_assignment_rules {
+          [31m-[0m[0m expiration_required = true [90m-> null[0m[0m
+          [31m-[0m[0m expire_after        = "P365D" [90m-> null[0m[0m
+        }
+
+      [31m-[0m[0m notification_rules {
+          [31m-[0m[0m active_assignments {
+              [31m-[0m[0m admin_notifications {
+                  [31m-[0m[0m additional_recipients = [] [90m-> null[0m[0m
+                  [31m-[0m[0m default_recipients    = true [90m-> null[0m[0m
+                  [31m-[0m[0m notification_level    = "All" [90m-> null[0m[0m
+                }
+              [31m-[0m[0m approver_notifications {
+                  [31m-[0m[0m additional_recipients = [] [90m-> null[0m[0m
+                  [31m-[0m[0m default_recipients    = true [90m-> null[0m[0m
+                  [31m-[0m[0m notification_level    = "All" [90m-> null[0m[0m
+                }
+              [31m-[0m[0m assignee_notifications {
+                  [31m-[0m[0m additional_recipients = [] [90m-> null[0m[0m
+                  [31m-[0m[0m default_recipients    = true [90m-> null[0m[0m
+                  [31m-[0m[0m notification_level    = "All" [90m-> null[0m[0m
+                }
+            }
+          [31m-[0m[0m eligible_activations {
+              [31m-[0m[0m admin_notifications {
+                  [31m-[0m[0m additional_recipients = [] [90m-> null[0m[0m
+                  [31m-[0m[0m default_recipients    = true [90m-> null[0m[0m
+                  [31m-[0m[0m notification_level    = "All" [90m-> null[0m[0m
+                }
+              [31m-[0m[0m approver_notifications {
+                  [31m-[0m[0m additional_recipients = [] [90m-> null[0m[0m
+                  [31m-[0m[0m default_recipients    = true [90m-> null[0m[0m
+                  [31m-[0m[0m notification_level    = "Critical" [90m-> null[0m[0m
+                }
+              [31m-[0m[0m assignee_notifications {
+                  [31m-[0m[0m additional_recipients = [] [90m-> null[0m[0m
+                  [31m-[0m[0m default_recipients    = true [90m-> null[0m[0m
+                  [31m-[0m[0m notification_level    = "All" [90m-> null[0m[0m
+                }
+            }
+          [31m-[0m[0m eligible_assignments {
+              [31m-[0m[0m admin_notifications {
+                  [31m-[0m[0m additional_recipients = [] [90m-> null[0m[0m
+                  [31m-[0m[0m default_recipients    = true [90m-> null[0m[0m
+                  [31m-[0m[0m notification_level    = "All" [90m-> null[0m[0m
+                }
+              [31m-[0m[0m approver_notifications {
+                  [31m-[0m[0m additional_recipients = [] [90m-> null[0m[0m
+                  [31m-[0m[0m default_recipients    = true [90m-> null[0m[0m
+                  [31m-[0m[0m notification_level    = "Critical" [90m-> null[0m[0m
+                }
+              [31m-[0m[0m assignee_notifications {
+                  [31m-[0m[0m additional_recipients = [] [90m-> null[0m[0m
+                  [31m-[0m[0m default_recipients    = true [90m-> null[0m[0m
+                  [31m-[0m[0m notification_level    = "All" [90m-> null[0m[0m
+                }
+            }
+        }
+    }
+
+[1mPlan:[0m 1 to add, 1 to change, 1 to destroy.
+[0m

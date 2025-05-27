@@ -1,0 +1,21 @@
+module "example-bastion" {
+  source                 = "../"
+  location               = var.location
+  name                   = var.name
+  resource_group_name    = var.resource_group_name
+  enable_telemetry       = var.enable_telemetry
+  copy_paste_enabled     = var.copy_paste_enabled
+  file_copy_enabled      = var.file_copy_enabled
+  sku                    = var.sku
+  ip_connect_enabled     = var.ip_connect_enabled
+  scale_units            = var.scale_units
+  shareable_link_enabled = var.shareable_link_enabled
+  tunneling_enabled      = var.tunneling_enabled
+  kerberos_enabled       = var.kerberos_enabled
+  virtual_network        = var.virtual_network
+  virtual_network_id     = var.virtual_network_id
+  public_ip              = var.public_ip
+  app_id         = var.app_id
+  msftmigration  = var.msftmigration
+  environment    = var.environment
+}

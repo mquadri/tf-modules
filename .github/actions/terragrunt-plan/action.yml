@@ -1,0 +1,162 @@
+
+name: Terragrunt Plan
+description: Terragrunt Plan
+
+runs:
+  using: composite
+  steps:
+    - uses: azure/login@v2
+      with:
+        creds: '{"clientId":"${{ env.ARM_CLIENT_ID }}","clientSecret":"${{ env.ARM_CLIENT_SECRET }}","tenantId":"${{ env.ARM_TENANT_ID }}"}'
+        allow-no-subscriptions: true
+    - name: Generate a token
+      id: generate-token
+      uses: actions/create-github-app-token@v1
+      with:
+        app-id: ${{ inputs.app-id }}
+        private-key: ${{ inputs.private-key }}
+        owner: ${{ github.repository_owner }}
+
+    - name: github private repo access
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ steps.generate-token.outputs.token }}
+      run: git config --global url."https://x-access-token:${GITHUB_TOKEN}@github.com".insteadOf https://github.com
+
+    - name: "Terragrunt Init, Validate"
+      shell: bash
+      working-directory: "./${{ inputs.work-dir }}"
+      env:
+        TERRAGRUNT_NON_INTERACTIVE: true
+      run: |
+        set -xeuo pipefail
+        git config --global --list
+        
+        terragrunt init
+        terragrunt run-all validate --terragrunt-ignore-dependency-errors --terragrunt-log-level debug
+
+    - name: "Terragrunt Plan"
+      id: plan
+      shell: bash
+      working-directory: "./${{ inputs.work-dir }}"
+      env:
+        TERRAGRUNT_NON_INTERACTIVE: true
+      run: |
+        set -xeuo pipefail
+
+        git config --global --list
+
+        terragrunt run-all --terragrunt-json-out-dir ./out plan -compact-warnings -input=false -out tfplan --terragrunt-ignore-dependency-errors
+
+        echo "####### Plan Output #######"
+        exec > >(tee -a "${GITHUB_WORKSPACE}/plan_output.txt") 2>&1 terragrunt  run-all --terragrunt-json-out-dir ./out show -no-color --terragrunt-ignore-dependency-errors --terragrunt-parallelism 1
+
+    - name: Get Plan summary
+      id: plan-summary
+      shell: bash
+      working-directory: "./${{ inputs.work-dir }}"
+      env:
+        TERRAGRUNT_NON_INTERACTIVE: true
+        WORK_DIR: ${{ inputs.work-dir }}
+        ENVIRONMENT: ${{ inputs.environment }}
+      run: |
+        set -xeuo pipefail
+
+        echo "## Terraform Plan 📖 SUMMARY Changes" > "${GITHUB_WORKSPACE}/plan_output_summary.md"
+        main_dir=$(dirname ${WORK_DIR})
+        for i in $(find ./out -name tfplan.json);
+        do 
+          project_name="${ENVIRONMENT}"
+
+          {
+            printf "<details>\n"
+            printf "<summary>TF SUMMARY  $project_name</summary>\n\n"
+          } >> "${GITHUB_WORKSPACE}/plan_output_summary.md"
+          tf-summarize -md $i >> "${GITHUB_WORKSPACE}/plan_output_summary.md"
+          printf "\n\n</details>" >> "${GITHUB_WORKSPACE}/plan_output_summary.md"
+          printf "\n" >> "${GITHUB_WORKSPACE}/plan_output_summary.md"
+        done
+          
+        echo "plan_summary_file_path=${GITHUB_WORKSPACE}/plan_output_summary.md" >> $GITHUB_ENV
+                 
+
+    - name: "Format output file"
+      shell: bash
+      env:
+        MATRIX_DIRECTORY: ${{ matrix.directory }}
+      run: |
+        set -xeuo pipefail
+
+        echo "Formatting output file from ${MATRIX_DIRECTORY}"
+
+        mv "${GITHUB_WORKSPACE}/plan_output.txt" "${GITHUB_WORKSPACE}/plan_output.txt.orig"
+
+        echo 'Ran Plan for dir: `${MATRIX_DIRECTORY}`' >> "${GITHUB_WORKSPACE}/plan_output.txt"
+        echo >> "${GITHUB_WORKSPACE}/plan_output.txt"
+        echo '<details><summary>Show Output </summary>' >> "${GITHUB_WORKSPACE}/plan_output.txt"
+        echo >> "${GITHUB_WORKSPACE}/plan_output.txt"
+        echo '```diff' >> "${GITHUB_WORKSPACE}/plan_output.txt"
+        echo >> "${GITHUB_WORKSPACE}/plan_output.txt"
+        cat "${GITHUB_WORKSPACE}/plan_output.txt.orig" >> "${GITHUB_WORKSPACE}/plan_output.txt"
+        echo >> "${GITHUB_WORKSPACE}/plan_output.txt"
+        echo '```' >> "${GITHUB_WORKSPACE}/plan_output.txt"
+
+        echo "plan_report_file_path=${GITHUB_WORKSPACE}/plan_output.txt" >> $GITHUB_ENV
+
+
+
+    - name: Terraform - Show Plan in PR
+      uses: actions/github-script@v6
+      env:
+        PLAN_OUTCOME: ${{ steps.plan.outcome }}
+      with:
+        github-token: ${{ steps.generate-token.outputs.token }}
+        script: |
+          const run_url = `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`;
+          const run_link = `[Actions](${run_url})`;
+          const planResultPath = process.env.plan_report_file_path;
+          const plansummaryResultPath = process.env.plan_summary_file_path;
+          const fs = require('fs');
+
+          try {
+            const rawPlanResult = fs.readFileSync(planResultPath, 'utf8');
+            const rawPlanSummaryResult = fs.readFileSync(plansummaryResultPath, 'utf8');
+            const planResult = rawPlanResult
+              .replace(
+                /[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g,
+                ''
+              )
+              .replace(/.*terraform:\s/gm, '');
+            const planSummaryResult = rawPlanSummaryResult
+              .replace(
+                /[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g,
+                ''
+              )
+              .replace(/.*terraform:\s/gm, '');
+
+            const plan = planResult.length > 65000
+              ? planResult.substring(0, 65000) + " ..."
+              : planResult;
+
+            const truncated_message = `Complete plan can be checked in ${run_link}.\n\n`
+
+            const output = `
+          # Terraform Plan 📖 - \`${PLAN_OUTCOME}\`
+
+          ${truncated_message}
+
+          ${planSummaryResult}
+
+          *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Working Directory: \`${{ github.workspace }}\`, Workflow: \`${{ github.workflow }}\`*`;
+
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            });
+
+          } catch (error) {
+            console.error("Error reading or processing the plan result:", error);
+            process.exit(1);
+          }

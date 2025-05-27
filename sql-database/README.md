@@ -1,0 +1,55 @@
+
+<!-- BEGIN_TF_DOCS -->
+## Requirements
+
+| Name | Version |
+|------|---------|
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.5 |
+| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | >= 3.0, < 4.0 |
+| <a name="requirement_random"></a> [random](#requirement\_random) | >= 3.5.0, < 4.0.0 |
+| <a name="requirement_validation"></a> [validation](#requirement\_validation) | ~> 1.1.1 |
+
+## Providers
+
+| Name | Version |
+|------|---------|
+| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | >= 3.0, < 4.0 |
+
+## Modules
+
+No modules.
+
+## Resources
+
+| Name | Type |
+|------|------|
+| [azurerm_mssql_database.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/mssql_database) | resource |
+
+## Inputs
+
+| Name | Description | Type | Default | Required |
+|------|-------------|------|---------|:--------:|
+| <a name="input_appFunction"></a> [appFunction](#input\_appFunction) | app function | `string` | n/a | yes |
+| <a name="input_appid"></a> [appid](#input\_appid) | The related application for resources. Used for tagging and naming purposes. | `string` | n/a | yes |
+| <a name="input_appname"></a> [appname](#input\_appname) | the app name for the resources.  Used for tagging and naming purposes | `string` | n/a | yes |
+| <a name="input_costAllocation"></a> [costAllocation](#input\_costAllocation) | can only be sharedcosts or chargeback | `string` | n/a | yes |
+| <a name="input_costAppOwnerManager"></a> [costAppOwnerManager](#input\_costAppOwnerManager) | The app owner manager responsible for resources. Used for tagging purposes. | `string` | n/a | yes |
+| <a name="input_costAppOwnerTech"></a> [costAppOwnerTech](#input\_costAppOwnerTech) | The app owner responsible for resources. Used for tagging and naming purposes. | `string` | n/a | yes |
+| <a name="input_costBudgetOwner"></a> [costBudgetOwner](#input\_costBudgetOwner) | The budget owner responsible for resources. Used for tagging purposes. | `string` | n/a | yes |
+| <a name="input_costCostCenter"></a> [costCostCenter](#input\_costCostCenter) | The cost center code for resources. Used for tagging and naming purposes. | `string` | n/a | yes |
+| <a name="input_costDivision"></a> [costDivision](#input\_costDivision) | cost division | `string` | n/a | yes |
+| <a name="input_costVP"></a> [costVP](#input\_costVP) | The cost vp for resources. Used for tagging purposes. | `string` | n/a | yes |
+| <a name="input_costbaseline"></a> [costbaseline](#input\_costbaseline) | year resource created | `string` | n/a | yes |
+| <a name="input_database_names"></a> [database\_names](#input\_database\_names) | List of databases to be created along with variables to be added<br><br>- `name` - (Required) The name of the database to be created.<br>- `server_id` - (Required) The id of the MS SQL Server on which to create the database. Changing this forces a new resource to be created.<br>- `collation` - (Optional) Specifies the collation of the database. Changing this forces a new resource to be created.<br>- `max_size_gb` -  (Optional) The max size of the database in gigabytes.<br>- `sku_name` - (Optional) Specifies the name of the SKU used by the database.<br>- `zone_redundant` - (Optional) Whether or not this database is zone redundant, which means the replicas of this database will be spread across multiple availability zones. This property is only settable for Premium and Business Critical databases.<br>- `elastic_pool_id` - (Optional) Specifies the ID of the elastic pool containing this database.<br>- `create_mode` - (Optional) The create mode of the database. Possible values are Copy, Default, OnlineSecondary, PointInTimeRestore, Recovery, Restore, RestoreExternalBackup, RestoreExternalBackupSecondary, RestoreLongTermRetentionBackup and Secondary. Mutually exclusive with import. Changing this forces a new resource to be created. Defaults to Default.<br>- `creation_source_database_id` - (Optional) The ID of the source database from which to create the new database.<br>- `restore_point_in_time` - (Optional) Specifies the point in time (ISO8601 format) of the source database that will be restored to create the new database. <br>- `auto_pause_delay_in_minutes` - (Optional) Time in minutes after which database is automatically paused.<br>- `enclave_type` - (Optional) Specifies the type of enclave to be used by the elastic pool. When enclave\_type is not specified (e.g., the default) enclaves are not enabled on the database. Possible values are Default or VBS.<br>- `geo_backup_enabled` -(Optional) A boolean that specifies if the Geo Backup Policy is enabled. Defaults to true.<br>- `maintenance_configuration_name` - (Optional) The name of the Public Maintenance Configuration window to apply to the database.<br>- `ledger_enabled` - (Optional) A boolean that specifies if this is a ledger database. Defaults to false. Changing this forces a new resource to be created.<br>- `license_type` - (Optional) Specifies the license type applied to this database. Possible values are LicenseIncluded and BasePrice.<br>- `min_capacity` - (Optional) Minimal capacity that database will always have allocated, if not paused. This property is only settable for Serverless databases.<br>- `recover_database_id` - (Optional) The ID of the database to be recovered. This property is only applicable when the create\_mode is Recovery.<br>- `recovery_point_id` - (Optional) The ID of the Recovery Services Recovery Point Id to be restored. This property is only applicable when the create\_mode is Recovery.<br>- `restore_dropped_database_id` - (Optional) The ID of the database to be restored. This property is only applicable when the create\_mode is Restore.<br>- `restore_long_term_retention_backup_id` - (Optional) The ID of the long term retention backup to be restored. This property is only applicable when the create\_mode is RestoreLongTermRetentionBackup.<br>- `read_replica_count` - (Optional) The number of readonly secondary replicas associated with the database to which readonly application intent connections may be routed. <br>- `read_scale` - (Optional) If enabled, connections that have application intent set to readonly in their connection string may be routed to a readonly secondary replica.<br>- `sample_name` -  (Optional) Specifies the name of the sample schema to apply when creating this database. Possible value is AdventureWorksLT.<br>- `storage_account_type` - (Optional) Specifies the storage account type used to store backups for this database. Possible values are Geo, GeoZone, Local and Zone. Defaults to Geo.<br>- `transparent_data_encryption_enabled` - (Optional) If set to true, Transparent Data Encryption will be enabled on the database. Defaults to true.<br>- `transparent_data_encryption_key_vault_key_id` - (Optional) The fully versioned Key Vault Key URL<br>- `transparent_data_encryption_key_automatic_rotation_enabled` -  (Optional) Boolean flag to specify whether TDE automatically rotates the encryption Key to latest version or not. Possible values are true or false. Defaults to false.<br>- `secondary_type` - (Optional) How do you want your replica to be made? Valid values include Geo and Named. Defaults to Geo. Changing this forces a new resource to be created.<br>- `tags` - (Optional) A mapping of tags to assign to the resource. | <pre>map(object({<br><br>    name                                                       = string<br>    server_id                                                  = string<br>    collation                                                  = optional(string, null)<br>    max_size_gb                                                = optional(number, null)<br>    sku_name                                                   = optional(string, null)<br>    zone_redundant                                             = optional(string, null)<br>    elastic_pool_id                                            = optional(string, null)<br>    create_mode                                                = optional(string, null)<br>    creation_source_database_id                                = optional(string, null)<br>    restore_point_in_time                                      = optional(string, null)<br>    auto_pause_delay_in_minutes                                = optional(number, null)<br>    enclave_type                                               = optional(string, null)<br>    geo_backup_enabled                                         = optional(bool, null)<br>    maintenance_configuration_name                             = optional(string, null)<br>    ledger_enabled                                             = optional(bool, null)<br>    license_type                                               = optional(string, null)<br>    min_capacity                                               = optional(string, null)<br>    recover_database_id                                        = optional(string, null)<br>    recovery_point_id                                          = optional(string, null)<br>    restore_dropped_database_id                                = optional(string, null)<br>    restore_long_term_retention_backup_id                      = optional(string, null)<br>    read_replica_count                                         = optional(number, null)<br>    read_scale                                                 = optional(string, null)<br>    sample_name                                                = optional(string, null)<br>    storage_account_type                                       = optional(string, null)<br>    transparent_data_encryption_enabled                        = optional(bool, null)<br>    transparent_data_encryption_key_vault_key_id               = optional(string, null)<br>    transparent_data_encryption_key_automatic_rotation_enabled = optional(bool, null)<br>    secondary_type                                             = optional(string, null)<br>    tags                                                       = optional(map(string), null)<br><br>  }))</pre> | `{}` | no |
+| <a name="input_env"></a> [env](#input\_env) | The environment code the for resources. Used for tagging and naming purposes. | `string` | n/a | yes |
+| <a name="input_location"></a> [location](#input\_location) | The Azure region where resources will be deployed | `string` | n/a | yes |
+| <a name="input_monthlyBudget"></a> [monthlyBudget](#input\_monthlyBudget) | monthly budget | `string` | n/a | yes |
+| <a name="input_resourcetype"></a> [resourcetype](#input\_resourcetype) | the resource type being deployed see naming standards for example | `string` | n/a | yes |
+
+## Outputs
+
+| Name | Description |
+|------|-------------|
+| <a name="output_azuresql_databases_ids"></a> [azuresql\_databases\_ids](#output\_azuresql\_databases\_ids) | The list of all Azure SQL database resource ids |
+| <a name="output_azuresql_databases_names"></a> [azuresql\_databases\_names](#output\_azuresql\_databases\_names) | List of all Azure SQL database resource names |
+<!-- END_TF_DOCS -->

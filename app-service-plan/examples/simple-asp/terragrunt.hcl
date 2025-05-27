@@ -1,0 +1,26 @@
+locals {}
+
+inputs = {
+  appid               = "SYSGEN788213322"
+  appname             = "example-asp"
+  env                 = "dev"
+  costCostCenter      = "S0019984"
+  costVP              = "Aaron Hastings"
+  costAppOwnerTech    = "Daniel Bohachick"
+  costAppOwnerManager = "Nels Thompson"
+  costBudgetOwner     = "Bryan Thompson"
+  costDivision        = "OPERATIONS STRATEGY & TRANSFORMATION"
+  appFunction         = "dlh-eo"
+  costbaseline        = "2024"
+  costAllocation      = "chargeback"
+  monthlyBudget       = "5000"
+  additionalcontext   = "01"
+  location            = "eastus2"
+
+  subscription_id = "00000000-0000-0000-0000-000000000000"
+
+  resource_group_name = "rg-asp-exmaple-infra-dev-01"
+
+  os_type  = "Windows"
+  sku_name = "S1"
+}

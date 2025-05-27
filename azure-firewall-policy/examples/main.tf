@@ -1,0 +1,31 @@
+module "avm-res-network-firewallpolicy" {
+  source                                            = "../"
+  location                                          = var.location
+  name                                              = var.name
+  resource_group_name                               = var.resource_group_name
+  diagnostic_settings                               = var.diagnostic_settings
+  enable_telemetry                                  = var.enable_telemetry
+  role_assignments                                  = var.role_assignments
+  firewall_policy_auto_learn_private_ranges_enabled = var.firewall_policy_auto_learn_private_ranges_enabled
+  firewall_policy_base_policy_id                    = var.firewall_policy_base_policy_id
+  firewall_policy_dns                               = var.firewall_policy_dns
+  firewall_policy_explicit_proxy                    = var.firewall_policy_explicit_proxy
+  firewall_policy_identity                          = var.firewall_policy_identity
+  firewall_policy_insights                          = var.firewall_policy_insights
+  firewall_policy_intrusion_detection               = var.firewall_policy_intrusion_detection
+  firewall_policy_private_ip_ranges                 = var.firewall_policy_private_ip_ranges
+  firewall_policy_sku                               = var.firewall_policy_sku
+  firewall_policy_sql_redirect_allowed              = var.firewall_policy_sql_redirect_allowed
+  firewall_policy_threat_intelligence_allowlist     = var.firewall_policy_threat_intelligence_allowlist
+  firewall_policy_threat_intelligence_mode          = var.firewall_policy_threat_intelligence_mode
+  firewall_policy_timeouts                          = var.firewall_policy_timeouts
+  firewall_policy_tls_certificate                   = var.firewall_policy_tls_certificate
+  base_policy_name                                  = var.base_policy_name
+  base_policy_resource_group_name                   = var.base_policy_resource_group_name
+  lock                                              = var.lock
+  app_id                                            = var.app_id
+  msftmigration                                     = var.msftmigration
+  environment                                       = var.environment
+
+  tags = var.tags
+}

@@ -1,0 +1,1 @@
+data "cbs_azure_plans" "azure_plans" {}

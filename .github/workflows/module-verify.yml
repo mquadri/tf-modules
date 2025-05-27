@@ -1,0 +1,102 @@
+
+name: Module Validation 
+on:
+  workflow_call:
+    inputs:
+      environment:
+        type: string
+        description: "Environment"
+        required: true
+      directories:
+        type: string
+        required: true
+      runner_group:
+        type: string
+        default: "AZ-GHAL-NONPROD-EUS2"
+
+    secrets:
+      WIZ_CLIENT_ID:
+        required: true
+      WIZ_CLIENT_SECRET:
+        required: true
+      APP_PRIVATE_KEY:
+        required: true
+
+
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+
+  module-check:
+    name: "Module Validate - ${{ matrix.directory.environment }}"
+    runs-on:
+      group: ${{ inputs.runner_group }}
+    environment: ${{ inputs.environment }}
+    strategy:
+      fail-fast: false
+      matrix:
+        directory: ${{ fromJson(inputs.directories) }}
+
+    env:
+      # ARM_USE_OIDC: true
+      ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+      ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      # ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+
+    steps:
+      - name: Git Config
+        run: |
+          git config --global --add safe.directory $GITHUB_WORKSPACE
+
+      - name: Generate a token
+        id: generate-token
+        uses: actions/create-github-app-token@3ff1caaa28b64c9cc276ce0a02e2ff584f3900c5 #v2.0.2
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ steps.generate-token.outputs.token }}
+          fetch-depth: 0
+
+      - name: List Environment Variables
+        run: env
+
+      - name: Terraform Installer
+        uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd #v3.1.2
+        env:
+          GITHUB_TOKEN: ${{ steps.generate-token.outputs.token }}
+
+      - name: Terragrunt installer
+        uses: autero1/action-terragrunt@aefb0a43c4f5503a91fefb307745c4d51c26ed0e #v3.0.2
+        with:
+          terragrunt-version: v0.67.6
+
+      - name: tf-summarize installer
+        uses: kishaningithub/setup-tf-summarize@b752490b135f74e59d82e656a1dab7f11a937f84 #v2
+        with:
+          tf-summarize-version: v0.3.14
+        env:
+          GITHUB_TOKEN: ${{ steps.generate-token.outputs.token }}
+
+      - name: Prerequisites
+        # uses: ./.github/actions/terraform-prerequisites
+        uses: CenturyLink/tf-modules-azure/.github/actions/terraform-prerequisites@main
+        with:
+          work-dir: ${{ matrix.directory.directory }}
+          POLICY: "Lumen IaC policy"
+          WIZ_CLIENT_ID: ${{ secrets.WIZ_CLIENT_ID }}
+          WIZ_CLIENT_SECRET: ${{ secrets.WIZ_CLIENT_SECRET }}
+          token: ${{ steps.generate-token.outputs.token }}
+          ACTIONS_LOG_LEVEL : ${{ vars.ACTIONS_LOG_LEVEL }}
+        env:
+          GITHUB_TOKEN: ${{ steps.generate-token.outputs.token }}
+          GH_TOKEN: ${{ steps.generate-token.outputs.token }}
+          

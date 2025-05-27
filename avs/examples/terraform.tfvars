@@ -1,0 +1,6 @@
+avs_network_cidr           = "10.0.0.0/21"
+location                   = "EastUS2"
+name                       = "test-avs"
+resource_group_name        = "avs-rg"
+resource_group_resource_id = ""
+sku_name                   = "av36"

@@ -1,0 +1,17 @@
+locals {}
+
+inputs = {
+  appname                 = "example-app"
+  env                     = "dev"
+  location                = "westus"
+  billing_plan            = "Monthly"
+  display_name            = "Example Reservation Order"
+  quantity                = 1
+  renew                   = false
+  instance_flexibility    = "Off"
+  reserved_resource_type  = "VirtualMachines"
+  term                    = "P1Y"
+  sku_name                = "Standard_D2s_v3"
+  resource_group_name     = "sample-resource-group"
+  subscription_id         = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+}

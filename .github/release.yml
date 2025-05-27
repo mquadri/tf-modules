@@ -1,0 +1,65 @@
+# .github/release.yml
+
+changelog:
+  exclude:
+    labels:
+      - release
+  categories:
+    - title: ☣️ Breaking Changes ☣️
+      labels:
+        - "breaking-change"
+    - title: (AVM) New features and improvements 🚀
+      labels:
+        - enhancement
+      exclude:
+        labels:
+          - "breaking-change"
+          - "AZURERM"
+          - "AZAPI"
+    - title: (AZURERM) New features and improvements 🚀
+      labels:
+        - enhancement
+      exclude:
+        labels:
+          - "breaking-change"
+          - "AVM"
+          - "AZAPI"
+    - title: (AZAPI) New features and improvements 🚀
+      labels:
+        - enhancement
+      exclude:
+        labels:
+          - "breaking-change"
+          - "AVM"
+          - "AZURERM"
+    - title: New features and improvements 🚀
+      labels:
+        - enhancement
+      exclude:
+        labels:
+          - "breaking-change"
+          - "AVM"
+          - "AZURERM"
+          - "AZAPI"
+    - title: Bug fixes 🐛
+      labels:
+        - bug
+      exclude:
+        labels:
+          - "breaking-change"
+    - title: Performance Improvements ⌛
+      labels:
+        - performance
+        - perf
+    - title: Refactoring ♻️
+      labels:
+        - refactor
+    - title: Test Changes 🧪
+      labels:
+        - test
+    - title: Documentation 📚	
+      labels:
+        - documentation
+    - title: Other Changes 🌐
+      labels:
+        - "*"

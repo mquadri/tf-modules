@@ -1,0 +1,54 @@
+
+name: Terraform Prerequisites
+description: Terraform Prerequisites
+
+runs:
+  using: composite
+  steps:
+
+    - name: Super-linter
+      uses: super-linter/super-linter@4e8a7c2bf106c4c766c816b35ec612638dc9b6b2
+      env:
+        GITHUB_TOKEN: ${{ inputs.token }}
+        VALIDATE_ALL_CODEBASE: false
+        TERRAFORM_TFLINT_CONFIG_FILE: ".tflint.custom.hcl"
+        FILTER_REGEX_INCLUDE: ".*${{ inputs.work-dir }}/.*"
+        VALIDATE_JSCPD: false
+        VALIDATE_CHECKOV: false
+        VALIDATE_TERRAFORM_TERRASCAN: false
+        LOG_LEVEL: ${{ inputs.ACTIONS_LOG_LEVEL }}
+        VALIDATE_NATURAL_LANGUAGE: false
+        VALIDATE_MARKDOWN_PRETTIER: false
+        
+    - name: Download WizCLI
+      shell: bash
+      run: |
+          curl -o wizcli https://wizcli.app.wiz.io/latest/wizcli && chmod +x wizcli
+
+    - name: Authenticate to Wiz
+      shell: bash
+      env:
+        WIZ_CLIENT_ID: ${{ inputs.WIZ_CLIENT_ID }}
+        WIZ_CLIENT_SECRET: ${{ inputs.WIZ_CLIENT_SECRET }}
+      run: |
+          ./wizcli auth --id "${WIZ_CLIENT_ID}" --secret "${WIZ_CLIENT_SECRET}"
+
+
+    - name: Run wiz CLI IaC scan in changed directories
+      shell: bash
+      id: wiz-scan
+      env:
+        WORK_DIR: ${{ inputs.work-dir }}
+        POLICY: ${{ inputs.policy }}
+      run: |
+      
+          root_dir=$(pwd)
+          for dir in "${WORK_DIR}"; do
+            echo "Scanning directory: \"$dir\" and its subdirectories"
+            find "$dir" -type d | while read -r subdir; do
+              echo "Running scan in: \"$subdir\" "
+              $root_dir/wizcli iac scan --path "$subdir" --policy "${POLICY}"
+            done
+          done
+
+
