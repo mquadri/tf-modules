@@ -18,6 +18,12 @@ variable "msftmigration" {
   type        = string
 }
 
+variable "mal_id" {
+  description = "The MAL ID for tagging purposes."
+  type        = string
+  default     = "MAL000XYZ" # Example default for example file
+}
+
 
 variable "dedicated_host_group_name" {
   description = "The name of the dedicated host group."

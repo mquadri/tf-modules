@@ -1,20 +1,13 @@
-# tflint-ignore: terraform_required_version
 terraform {
+  required_version = "~> 1.0"
   required_providers {
-    # tflint-ignore: terraform_required_providers
     azurerm = {
-      source = "hashicorp/azurerm"
-
-    }
-    azuread = {
-      source = "hashicorp/azuread"
-    }
-    azapi = {
-      source = "Azure/azapi"
+      source  = "hashicorp/azurerm"
+      version = "~> 3.0" 
     }
     validation = {
       source  = "tlkamp/validation"
-      version = "~> 1.1.1"
+      version = "~> 1.1.1" 
     }
   }
 }

@@ -13,3 +13,15 @@ output "resource_id" {
   description = "The ID of the machine learning workspace."
   value       = { for r, r_id in module.avm-res-search-searchservice : r => r_id.resource_id }
 }
+
+output "primary_admin_keys" {
+  description = "A map of primary admin keys for the Azure AI Search services, keyed by the input search_service map keys."
+  value       = { for k, inst in module.avm-res-search-searchservice : k => inst.resource.primary_key }
+  sensitive   = true
+}
+
+output "secondary_admin_keys" {
+  description = "A map of secondary admin keys for the Azure AI Search services, keyed by the input search_service map keys."
+  value       = { for k, inst in module.avm-res-search-searchservice : k => inst.resource.secondary_key }
+  sensitive   = true
+}

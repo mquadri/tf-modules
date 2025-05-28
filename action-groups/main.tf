@@ -15,6 +15,7 @@ locals {
     app_id        = var.app_id
     environment   = var.environment
     msftmigration = var.msftmigration
+    mal_id        = var.mal_id # Added mal_id
   }
 }
 
@@ -26,7 +27,8 @@ resource "azurerm_monitor_action_group" "group" {
   short_name          = each.value.short_name
   enabled             = lookup(each.value, "enabled", true)
   location            = lookup(each.value, "location", "global")
-  tags                = merge(local.mandatory_tags, lookup(each.value, "tags", {}))
+  # Updated tag merging order: mandatory tags > per-group tags > general module instance tags
+  tags                = merge(var.tags, lookup(each.value, "tags", {}), local.mandatory_tags)
 
 
   dynamic "arm_role_receiver" {
