@@ -22,7 +22,7 @@ output "ai_services_endpoint" {
 output "ais_resource_object" {
   description = "Full resource object of the AI Services instance."
   value       = azapi_resource.AIServicesResource
-  sensitive   = true 
+  sensitive   = true
 }
 
 output "hub_resource_object" {

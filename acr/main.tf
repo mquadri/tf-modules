@@ -28,7 +28,7 @@ module "avm-res-containerregistry-registry" {
   version                       = "0.3.1" # Consider making this version configurable
   location                      = var.location
   # Updated to use var.acr_name_override and the modified local.naming
-  name                          = coalesce(var.acr_name_override, "${local.naming}${var.additionalcontext}") 
+  name                          = coalesce(var.acr_name_override, "${local.naming}${var.additionalcontext}")
   resource_group_name           = var.resource_group_name
   sku                           = var.sku
   admin_enabled                 = var.admin_enabled

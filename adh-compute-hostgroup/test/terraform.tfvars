@@ -30,7 +30,7 @@ tags = {
 #   hosttfvars = {
 #     name                    = "tfvarshost01"
 #     platform_fault_domain   = 1
-#     sku_name                = "DSv3-Type1" 
+#     sku_name                = "DSv3-Type1"
 #     auto_replace_on_failure = true
 #     license_type            = "None"
 #   }

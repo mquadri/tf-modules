@@ -27,7 +27,7 @@ module "vm_example" {
   // mal_id              = "MAL00123"
   // virtual_machine_size = "Standard_DS1_v2"
   // admin_username      = "lmnadmin"
-  // subnet_id           = "/subscriptions/xxxx/resourceGroups/my-rg/providers/Microsoft.Network/virtualNetworks/my-vnet/subnets/my-subnet" 
+  // subnet_id           = "/subscriptions/xxxx/resourceGroups/my-rg/providers/Microsoft.Network/virtualNetworks/my-vnet/subnets/my-subnet"
   // ... other necessary variables from vm/variables*.tf ...
 }
 ```

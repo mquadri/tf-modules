@@ -9,7 +9,7 @@ module "aad_gcp_association_example" {
   group_name = var.example_group_name
 
   // Optional: Provide these if you need to override module defaults
-  // app_role_id_for_association            = var.example_app_role_id 
+  // app_role_id_for_association            = var.example_app_role_id
   // gcp_sso_service_principal_display_name = var.example_sso_sp_name
   // gcp_prov_service_principal_display_name = var.example_prov_sp_name
 }

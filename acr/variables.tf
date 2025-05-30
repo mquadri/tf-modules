@@ -96,13 +96,13 @@ variable "resourcetype" {
 variable "appname" {
   description = "Application name for naming ACR if `acr_name_override` is not specified."
   type        = string
-  default     = "defaultapp" 
+  default     = "defaultapp"
 }
 
 variable "additionalcontext" {
   description = "Additional context for naming ACR if `acr_name_override` is not specified (e.g., '01', 'shared')."
   type        = string
-  default     = "01" 
+  default     = "01"
 }
 
 # Mandatory Tagging Variables

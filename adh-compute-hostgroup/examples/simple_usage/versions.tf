@@ -3,7 +3,7 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "~> 3.0" 
+      version = "~> 3.0"
     }
     # modtm and random are not typically needed for a simple example
     # unless the example itself directly uses resources from these providers.

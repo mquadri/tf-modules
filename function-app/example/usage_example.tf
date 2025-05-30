@@ -1,5 +1,5 @@
 module "function_app_example" {
-  source = "../" 
+  source = "../"
   // Add required variables here based on the module's variables.tf
   // mal_id = "example-mal-id" // Assuming mal_id would be a standard variable
   // resource_group_name = "example-rg"

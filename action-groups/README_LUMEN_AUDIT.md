@@ -74,7 +74,7 @@ module "action_groups_example" {
       webhook_receivers = [
         {
           name        = "my-pagerduty-webhook"
-          service_uri = "https://events.pagerduty.com/integration/xxxx/enqueue" 
+          service_uri = "https://events.pagerduty.com/integration/xxxx/enqueue"
           # Alternatively, using Key Vault:
           # key_vault_secret_id = "pagerduty-webhook-uri" # Name of the secret in the KV specified by var.key_vault_name
         }

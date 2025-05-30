@@ -5,7 +5,7 @@ module "app_gateway_main_example" {
   // resource_group_name = "example-rg"
   // location = "eastus"
   // app_gateway_name = "example-agw"
-  // sku_name = "Standard_v2" 
+  // sku_name = "Standard_v2"
   // subnet_id = "replace_with_actual_subnet_id"
   //
   // Note: App Gateway requires extensive configuration for:

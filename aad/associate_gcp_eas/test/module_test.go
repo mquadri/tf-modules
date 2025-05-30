@@ -25,7 +25,7 @@ func TestAadAssociateGcpEasExample(t *testing.T) {
 		// Variables to pass to our Terraform code using -var options
 		Vars: map[string]interface{}{
 			// Provide a real group name for testing if the default in examples/variables.tf is not suitable
-			// "example_group_name": "your-test-aad-group-name", 
+			// "example_group_name": "your-test-aad-group-name",
 		},
 	})
 

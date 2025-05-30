@@ -2,7 +2,7 @@
 # This file demonstrates how to call the parent VM module.
 
 # module "vm_example" {
-#   source = "../" 
+#   source = "../"
 #
 #   // Required variables for the VM module (refer to vm/variables.tf and vm/variables.*.tf)
 #   name                = "example-vm"
@@ -18,11 +18,11 @@
 #   virtual_machine_size = "Standard_DS1_v2"
 #   admin_username       = "lmnadmin"
 #   // For network, ensure you have a subnet_id from an existing VNet
-#   // subnet_id = data.azurerm_subnet.example.id 
+#   // subnet_id = data.azurerm_subnet.example.id
 #
 #   // If the module handles NIC creation and needs VNet/Subnet names:
 #   // vnet_name = "example-vnet"
-#   // subnet_name = "default" 
+#   // subnet_name = "default"
 #   // vnet_resource_group_name = "example-rg-network"
 #
 #   // If using SSH keys (for Linux)
@@ -30,7 +30,7 @@
 #   // disable_password_authentication = true
 #
 #   // If using password (ensure module supports this for Linux if applicable)
-#   // admin_password = "aVeryComplexPassword!" 
+#   // admin_password = "aVeryComplexPassword!"
 #
 #   // Image details (example for a common Linux image)
 #   // source_image_publisher = "Canonical"

@@ -23,7 +23,7 @@ module "standard_tags" {
   source = "<path_to_standard_tags_module>" // Replace with the actual path or source
 
   # Required Inputs
-  mal_id              = "MAL000123" 
+  mal_id              = "MAL000123"
   costAllocation      = "chargeback" // Must be "sharedcosts" or "chargeback"
 
   # Optional Inputs (provide as needed)
@@ -48,10 +48,10 @@ module "standard_tags" {
 # (Illustrative - this module does not create Azure resources itself)
 # resource "azurerm_resource_group" "example" {
 #   name     = "rg-example-${module.standard_tags.tags.environment}-${module.standard_tags.tags.appid}"
-#   location = module.standard_tags.tags.costRegion 
+#   location = module.standard_tags.tags.costRegion
 #   tags     = module.standard_tags.tags
 # }
-# 
+#
 # output "example_resource_group_tags" {
 #   description = "Tags applied to the example resource group."
 #   value       = azurerm_resource_group.example.tags

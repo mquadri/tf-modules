@@ -1,15 +1,15 @@
 module "private_dns_zone_example" {
-  source = "../" 
+  source = "../"
   // Add required variables here based on the module's variables.tf
   // mal_id = "example-mal-id" // Assuming mal_id would be a standard variable
   // resource_group_name = "example-rg"
-  // zone_name = "example.myprivatedns.com" 
+  // zone_name = "example.myprivatedns.com"
   //
   // // Optional: Link to a VNet
   // // virtual_network_links = {
   // //   "myVnetLink" = {
   // //     virtual_network_id = "replace_with_actual_vnet_id"
-  // //     registration_enabled = false 
+  // //     registration_enabled = false
   // //   }
   // // }
   //

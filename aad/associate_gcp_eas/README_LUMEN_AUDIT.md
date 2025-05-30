@@ -30,7 +30,7 @@ module "aad_gcp_association" {
 
   // Optional: Override the default App Role ID if needed.
   // The default is "9e79c739-f165-49e8-8745-fe08f1634b3b", which typically represents the 'User' role for many enterprise apps.
-  // app_role_id_for_association = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" 
+  // app_role_id_for_association = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 
   // Optional: Override default GCP Service Principal display names if they differ in your environment
   // gcp_sso_service_principal_display_name  = "Custom GCP SSO SP Name"

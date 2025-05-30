@@ -33,7 +33,7 @@ module "ai_search_test_instance" {
       partition_count     = 1
       # Add any other specific parameters you want to test from the search_service object structure
       # For example, if testing public_network_access_enabled:
-      # public_network_access_enabled = false 
+      # public_network_access_enabled = false
       tags = {
         InstanceSpecificTag = "SearchInstance1"
       }

@@ -8,7 +8,7 @@ variable "example_group_owners" {
   description = "List of User Principal Names (UPNs) or Object IDs for the owners of the example group."
   type        = list(string)
   // Provide actual UPNs or Object IDs from your test Azure AD tenant
-  // default     = ["user1@example.com", "00000000-0000-0000-0000-000000000000"] 
+  // default     = ["user1@example.com", "00000000-0000-0000-0000-000000000000"]
   // For safety in a generic example, leave this to be set by the user.
   // Ensure these users exist in the Azure AD where this example is run.
 }

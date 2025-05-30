@@ -20,7 +20,7 @@ module "my_app_gateway" {
   // sku_name            = "Standard_v2" // or WAF_v2
   // subnet_id           = data.azurerm_subnet.my_subnet.id
   // mal_id              = var.mal_id
-  
+
   // Frontend IP Configurations, Ports, Listeners, Backend Pools, HTTP Settings, Rules etc.
   // ... (These are highly specific to App Gateway and would need detailed input definitions)
 
