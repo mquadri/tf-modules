@@ -66,7 +66,7 @@ variable "private_endpoints" {
     resource_group_name             = string
     subnet_resource_id              = string
   }))
-  default     = {}
+  default = {}
 }
 
 variable "diagnostic_settings" {
@@ -83,7 +83,7 @@ variable "diagnostic_settings" {
     event_hub_name                           = optional(string, null)
     marketplace_partner_resource_id          = optional(string, null)
   }))
-  default     = {}
+  default = {}
 }
 
 # Variables for naming convention if acr_name_override is not provided
@@ -147,4 +147,100 @@ variable "georeplications" {
     tags                      = optional(map(any), null)
   }))
   default = []
+}
+
+# Feature flag variables
+variable "enable_encryption" {
+  description = "Enables encryption at rest for the container registry."
+  type        = bool
+  default     = false
+}
+
+variable "enable_retention_policy" {
+  description = "Enables retention policy for the container registry."
+  type        = bool
+  default     = false
+}
+
+variable "enable_content_trust" {
+  description = "Enables content trust for the container registry."
+  type        = bool
+  default     = false
+}
+
+variable "enable_network_rules" {
+  description = "Enables network rules for the container registry."
+  type        = bool
+  default     = false
+}
+
+variable "enable_quarantine_policy" {
+  description = "Enables quarantine policy for the container registry."
+  type        = bool
+  default     = false
+}
+
+variable "enable_encryption_with_key_vault" {
+  description = "Enables encryption with Key Vault for the container registry."
+  type        = bool
+  default     = false
+}
+
+# Encryption configuration
+variable "encryption_key_vault_key_id" {
+  description = "The ID of the Key Vault key used for encryption."
+  type        = string
+  default     = null
+}
+
+variable "encryption_identity_client_id" {
+  description = "The client ID of the identity used for encryption."
+  type        = string
+  default     = null
+}
+
+# Network rule set configuration
+variable "network_rule_default_action" {
+  description = "The default action when no network rule matches. Valid values are 'Allow' or 'Deny'."
+  type        = string
+  default     = "Deny"
+  validation {
+    condition     = contains(["Allow", "Deny"], var.network_rule_default_action)
+    error_message = "Valid values for network_rule_default_action are 'Allow' or 'Deny'."
+  }
+}
+
+variable "network_rule_ip_rules" {
+  description = "List of IP CIDR blocks allowed to access the Container Registry."
+  type = list(object({
+    action   = string
+    ip_range = string
+  }))
+  default = []
+}
+
+variable "network_rule_virtual_network_rules" {
+  description = "List of virtual network subnet IDs allowed to access the Container Registry."
+  type = list(object({
+    action    = string
+    subnet_id = string
+  }))
+  default = []
+}
+
+# Retention policy configuration
+variable "retention_policy_days" {
+  description = "The number of days to retain images for."
+  type        = number
+  default     = 7
+  validation {
+    condition     = var.retention_policy_days >= 0 && var.retention_policy_days <= 365
+    error_message = "Retention policy days must be between 0 and 365."
+  }
+}
+
+variable "mal_id" {
+  description = "The MAL ID to be used by the ACR module."
+  type        = string
+  default     = ""
 }

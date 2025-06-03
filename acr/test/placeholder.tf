@@ -1,3 +1,7 @@
+terraform {
+  required_version = ">= 1.0.0, < 2.0.0"
+}
+
 // Placeholder for ACR module tests.
 // Future tests could include:
 // 1. Basic ACR deployment with minimal configuration.

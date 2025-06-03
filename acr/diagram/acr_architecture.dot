@@ -1,0 +1,68 @@
+digraph AzureContainerRegistry {
+    graph [fontname="Helvetica", fontsize=12, rankdir=LR];
+    node [fontname="Helvetica", fontsize=10, shape=box, style=filled, fillcolor=lightblue];
+    edge [fontname="Helvetica", fontsize=9];
+
+    subgraph cluster_0 {
+        label = "Azure Container Registry Module";
+        style = filled;
+        color = lightgrey;
+        
+        // ACR Resources
+        acr [label="Azure Container\nRegistry", shape=box, fillcolor="#0072C6", fontcolor=white];
+        private_endpoint [label="Private\nEndpoint", shape=box, fillcolor="#0072C6", fontcolor=white];
+        diagnostics [label="Diagnostic\nSettings", shape=box, fillcolor="#0072C6", fontcolor=white];
+        geo_replication [label="Geo\nReplication", shape=box, fillcolor="#0072C6", fontcolor=white];
+        network_rules [label="Network\nRules", shape=box, fillcolor="#0072C6", fontcolor=white];
+        retention_policy [label="Retention\nPolicy", shape=box, fillcolor="#0072C6", fontcolor=white];
+        trust_policy [label="Trust\nPolicy", shape=box, fillcolor="#0072C6", fontcolor=white];
+        encryption [label="CMK\nEncryption", shape=box, fillcolor="#0072C6", fontcolor=white];
+        quarantine_policy [label="Quarantine\nPolicy", shape=box, fillcolor="#0072C6", fontcolor=white];
+        
+        // Connections
+        acr -> private_endpoint [label="connects to"];
+        acr -> diagnostics [label="logs to"];
+        acr -> geo_replication [label="replicates to"];
+        acr -> network_rules [label="secured by"];
+        acr -> retention_policy [label="managed by"];
+        acr -> trust_policy [label="validated by"];
+        acr -> encryption [label="encrypted by"];
+        acr -> quarantine_policy [label="scanned by"];
+    }
+    
+    // External Resources
+    log_analytics [label="Log Analytics\nWorkspace", shape=box, fillcolor="#008AD7", fontcolor=white];
+    storage_account [label="Storage\nAccount", shape=box, fillcolor="#008AD7", fontcolor=white];
+    event_hub [label="Event\nHub", shape=box, fillcolor="#008AD7", fontcolor=white];
+    key_vault [label="Key\nVault", shape=box, fillcolor="#008AD7", fontcolor=white];
+    vnet [label="Virtual\nNetwork", shape=box, fillcolor="#008AD7", fontcolor=white];
+    private_dns [label="Private DNS\nZone", shape=box, fillcolor="#008AD7", fontcolor=white];
+    
+    // Connections to external resources
+    diagnostics -> log_analytics [label="sends logs to"];
+    diagnostics -> storage_account [label="archives logs to"];
+    diagnostics -> event_hub [label="streams logs to"];
+    encryption -> key_vault [label="uses key from"];
+    private_endpoint -> vnet [label="connects to"];
+    private_endpoint -> private_dns [label="registered in"];
+    
+    // Clients
+    subgraph cluster_1 {
+        label = "Clients";
+        style = filled;
+        color = lightgrey;
+        
+        container_instances [label="Azure Container\nInstances", shape=box, fillcolor="#107C10", fontcolor=white];
+        aks [label="Azure Kubernetes\nService", shape=box, fillcolor="#107C10", fontcolor=white];
+        app_service [label="App\nService", shape=box, fillcolor="#107C10", fontcolor=white];
+        functions [label="Azure\nFunctions", shape=box, fillcolor="#107C10", fontcolor=white];
+        vm [label="Virtual\nMachines", shape=box, fillcolor="#107C10", fontcolor=white];
+    }
+    
+    // Client connections
+    container_instances -> acr [label="pulls from"];
+    aks -> acr [label="pulls from"];
+    app_service -> acr [label="pulls from"];
+    functions -> acr [label="pulls from"];
+    vm -> acr [label="pulls from"];
+}

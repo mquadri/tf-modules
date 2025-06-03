@@ -38,6 +38,9 @@ module "avm-res-network-privatednszone" {
   # Required Inputs
   domain_name         = var.domain_name
   resource_group_name = var.resource_group_name
+  msftmigration       = var.msftmigration
+  environment         = var.environment
+  app_id              = var.app_id
   # Optional Inputs
   a_records             = var.a_records
   aaaa_records          = var.aaaa_records
@@ -60,7 +63,6 @@ module "acr" {
   source                        = "../"
   depends_on                    = [azurerm_resource_group.rg]
   resource_group_name           = var.resource_group_name
-  acr_name                      = local.naming
   tags                          = var.tags
   location                      = var.location
   sku                           = var.sku
@@ -81,20 +83,10 @@ module "acr" {
     }
   }
   diagnostic_settings = var.diagnostic_settings
-  appid               = var.appid
-  appname             = var.appname
-  resourcetype        = var.resourcetype
-  costAppOwnerManager = var.costappownermanager
-  costAppOwnerTech    = var.costappownertech
-  costBudgetOwner     = var.costbudgetowner
-  costCostCenter      = var.costcostcenter
-  env                 = var.env
-  costAllocation      = var.costallocation #(can only be sharedcosts or chargeback)
-  appFunction         = var.appfunction
-  monthlyBudget       = var.monthlybudget
-  costbaseline        = var.costbaseline #(year resource created)
   additionalcontext   = var.additionalcontext
   app_id              = var.app_id
   environment         = var.environment
   msftmigration       = var.msftmigration
+  mal_id              = var.mal_id
 }
+

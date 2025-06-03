@@ -30,13 +30,13 @@ module "acr_example_instance" {
   location            = azurerm_resource_group.example_rg.location
 
   # Naming inputs (used if acr_name_override is not set)
-  appname             = "myacr"
-  environment         = "DEV"
+  appname     = "myacr"
+  environment = "DEV"
 
   # Mandatory Tagging Inputs
-  app_id              = "APP0002"
-  msftmigration       = "Phase1"
-  mal_id              = "MAL67890"
+  app_id        = "APP0002"
+  msftmigration = "Phase1"
+  mal_id        = "MAL67890"
 
   # ACR Specific Configuration
   sku                           = "Standard" // Options: Basic, Standard, Premium
