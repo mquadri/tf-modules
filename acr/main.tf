@@ -39,8 +39,8 @@ module "avm-res-containerregistry-registry" {
   diagnostic_settings           = var.diagnostic_settings
 
   # Optional feature configurations
-  network_rule_set  = local.network_rule_set
-  retention_policy  = local.retention_policy
+  network_rule_set = local.network_rule_set
+  retention_policy = local.retention_policy
   # trust_policy      = local.trust_policy
   # quarantine_policy = local.quarantine_policy
   # encryption        = local.enable_features.encryption_with_key_vault ? local.encryption_config.encryption : null

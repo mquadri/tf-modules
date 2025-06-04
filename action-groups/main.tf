@@ -28,7 +28,7 @@ resource "azurerm_monitor_action_group" "group" {
   enabled             = lookup(each.value, "enabled", true)
   location            = lookup(each.value, "location", "global")
   # Updated tag merging order: mandatory tags > per-group tags > general module instance tags
-  tags                = merge(var.tags, lookup(each.value, "tags", {}), local.mandatory_tags)
+  tags = merge(var.tags, lookup(each.value, "tags", {}), local.mandatory_tags)
 
 
   dynamic "arm_role_receiver" {
