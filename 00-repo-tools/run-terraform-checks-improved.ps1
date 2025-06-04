@@ -1,8 +1,8 @@
-# Terraform Module Quality Check Script
+# Terraform Module Quality Check Script (Improved Version)
 # This script runs formatting, linting, and documentation generation for Terraform modules
 # 
 # Usage: 
-#   .\run-terraform-checks.ps1 -ModulePath <path-to-module>
+#   .\run-terraform-checks-improved.ps1 -ModulePath <path-to-module>
 #
 # Parameters:
 #   -ModulePath         : (Required) Path to the Terraform module to check
@@ -31,72 +31,92 @@ function Test-AzureModuleCriterion {
     )
     
     Write-Host "`nChecking Azure Terraform Module Catalog Criterion compliance..." -ForegroundColor Yellow
-      # Define criterion requirements
-    $requirements = @(
-        @{Name="Provider Configuration"; File="required_providers.tf|versions.tf|main.tf"; Pattern="required_providers|provider \"azurerm\""}
-        @{Name="Module Versioning"; File="README.md"; Pattern="## Requirements|required_version"}
-        @{Name="Variable Validation"; File="variables.tf"; Pattern="validation \{"}
-        @{Name="Variable Descriptions"; File="variables.tf"; Pattern="description ="}
-        @{Name="Output Descriptions"; File="outputs.tf"; Pattern="description ="}
-        @{Name="Examples Directory"; File="examples/"; Pattern=""}
-        @{Name="Test Files"; File="test/"; Pattern=""}
-        @{Name="Readme Documentation"; File="README.md"; Pattern="## Usage|## Inputs|## Outputs"}
-        @{Name="Architectural Diagram"; File="diagram/"; Pattern=""}
+    
+    # Define requirements as a hashtable for easier handling
+    $requirementsList = @(
+        @{
+            Name = "Provider Configuration";
+            File = "required_providers.tf"; 
+            Pattern = "required_providers"
+        },
+        @{
+            Name = "Module Versioning"; 
+            File = "versions.tf"; 
+            Pattern = "required_version"
+        },
+        @{
+            Name = "Variable Validation"; 
+            File = "variables.tf"; 
+            Pattern = "validation"
+        },
+        @{
+            Name = "Variable Descriptions"; 
+            File = "variables.tf"; 
+            Pattern = "description"
+        },
+        @{
+            Name = "Output Descriptions"; 
+            File = "outputs.tf"; 
+            Pattern = "description"
+        },
+        @{
+            Name = "Examples Directory"; 
+            File = "examples"; 
+            IsDirectory = $true
+        },
+        @{
+            Name = "Test Files"; 
+            File = "test"; 
+            IsDirectory = $true
+        },
+        @{
+            Name = "README Documentation"; 
+            File = "README.md"; 
+            Pattern = "## Usage"
+        },
+        @{
+            Name = "Architectural Diagram"; 
+            File = "diagram"; 
+            IsDirectory = $true
+        }
     )
     
     $passCount = 0
-    $totalCount = $requirements.Count
+    $totalCount = $requirementsList.Count
     
-    foreach ($req in $requirements) {
+    foreach ($req in $requirementsList) {
         Write-Host "Checking for: $($req.Name)..." -ForegroundColor Cyan
         
-        if ($req.File -match "/\$") {
-            # This is a directory check
-            $dirName = $req.File.TrimEnd('/')
-            $dirCheck = wsl.exe --distribution "$Distribution" --exec bash -c "test -d '$WslPath/$dirName' && echo 'exists' || echo 'missing'"
+        if ($req.IsDirectory) {
+            # Directory check
+            $dirCheck = wsl.exe --distribution "$Distribution" --exec bash -c "test -d '$WslPath/$($req.File)' && echo 'exists' || echo 'missing'"
             if ($dirCheck -eq "exists") {
                 Write-Host "  ✓ $($req.Name) requirement passed" -ForegroundColor Green
                 $passCount++
             } else {
-                Write-Host "  ✗ $($req.Name) requirement failed - directory '$dirName' not found" -ForegroundColor Red
+                Write-Host "  ✗ $($req.Name) requirement failed - directory '$($req.File)' not found" -ForegroundColor Red
             }
         } else {
-            # This is a file content check
-            $filePatterns = $req.File -split "\|"
-            $found = $false
+            # File and pattern check
+            $fileCheck = wsl.exe --distribution "$Distribution" --exec bash -c "test -f '$WslPath/$($req.File)' && echo 'exists' || echo 'missing'"
             
-            foreach ($filePattern in $filePatterns) {
-                $files = wsl.exe --distribution "$Distribution" --exec bash -c "find '$WslPath' -maxdepth 1 -name '$filePattern' 2>/dev/null || echo ''"
-                
-                if ($files -and $files -ne "") {
-                    if ($req.Pattern -eq "") {
-                        # Just checking if file exists
-                        $found = $true
-                        break
+            if ($fileCheck -eq "exists") {
+                if ($req.Pattern) {
+                    # Check for pattern in file
+                    $patternCheck = wsl.exe --distribution "$Distribution" --exec bash -c "grep -E '$($req.Pattern)' '$WslPath/$($req.File)' > /dev/null 2>&1 && echo 'found' || echo 'notfound'"
+                    if ($patternCheck -eq "found") {
+                        Write-Host "  ✓ $($req.Name) requirement passed" -ForegroundColor Green
+                        $passCount++
                     } else {
-                        # Checking for pattern in file
-                        foreach ($file in $files -split "`n") {
-                            if ($file -and $file -ne "") {
-                                $patternCheck = wsl.exe --distribution "$Distribution" --exec bash -c "grep -E '$($req.Pattern)' '$file' > /dev/null 2>&1 && echo 'found' || echo 'notfound'"
-                                if ($patternCheck -eq "found") {
-                                    $found = $true
-                                    break
-                                }
-                            }
-                        }
+                        Write-Host "  ✗ $($req.Name) requirement failed - pattern '$($req.Pattern)' not found in $($req.File)" -ForegroundColor Red
                     }
+                } else {
+                    # Just checking if file exists
+                    Write-Host "  ✓ $($req.Name) requirement passed" -ForegroundColor Green
+                    $passCount++
                 }
-                
-                if ($found) {
-                    break
-                }
-            }
-            
-            if ($found) {
-                Write-Host "  ✓ $($req.Name) requirement passed" -ForegroundColor Green
-                $passCount++
             } else {
-                Write-Host "  ✗ $($req.Name) requirement failed - pattern not found in any of: $($req.File)" -ForegroundColor Red
+                Write-Host "  ✗ $($req.Name) requirement failed - file '$($req.File)' not found" -ForegroundColor Red
             }
         }
     }
@@ -122,8 +142,8 @@ try {
     }
     
     # Check for distributions
-    $distributions = wsl.exe --list --verbose 2>&1 | Out-String
-    if ($distributions -match "no distributions" -or $distributions -eq "" -or $null -eq $distributions) {
+    $distributionsCheck = wsl.exe --list --verbose 2>&1 | Out-String
+    if ($distributionsCheck -match "no distributions" -or $distributionsCheck -eq "" -or $null -eq $distributionsCheck) {
         Write-Host "Error: No WSL distributions found. Please install a Linux distribution in WSL." -ForegroundColor Red
         exit 1
     }
@@ -132,67 +152,41 @@ try {
     exit 1
 }
 
-# Check for Ubuntu distribution - improved detection method
-$ubuntuDistro = $null
-$distributions = wsl.exe --list --verbose 2>&1 | Out-String
-Write-Host "Available WSL distributions:" -ForegroundColor Cyan
-Write-Host $distributions -ForegroundColor Gray
-
-# Enhanced WSL distribution detection - supports more distribution formats
-if ($distributions -match "(?:\s|\*)*([^\s]+Ubuntu[^\s]*|Ubuntu[^\s]*|[^\s]*ubuntu[^\s]*)") {
-    $ubuntuDistro = $Matches[1].Trim()
-    Write-Host "Found Ubuntu distribution: $ubuntuDistro" -ForegroundColor Green
-} else {
-    # If no Ubuntu distribution found, extract all distribution names
-    $allDistros = $distributions -split "`n" | 
-                 Where-Object { $_ -match "(?:\s|\*)*([^\s]+)" } | 
-                 ForEach-Object { $Matches[1].Trim() } | 
-                 Where-Object { $_ -ne "NAME" -and $_ -ne "STATE" -and $_ -ne "VERSION" -and $_.Length -gt 1 }
-    
-    if ($allDistros -and $allDistros.Count -gt 0) {
-        # Find the default distribution (marked with *)
-        $defaultDistro = $distributions -split "`n" | Where-Object { $_ -match "\*\s+([^\s]+)" } | ForEach-Object { $Matches[1].Trim() }
-        
-        if ($defaultDistro) {
-            $ubuntuDistro = $defaultDistro
-            Write-Host "No Ubuntu distribution found. Using default distribution: $ubuntuDistro" -ForegroundColor Yellow
-        } else {
-            # If no default, use the first one
-            $ubuntuDistro = $allDistros[0]
-            Write-Host "No Ubuntu or default distribution found. Using first available distribution: $ubuntuDistro" -ForegroundColor Yellow
-        }
-    } else {
-        Write-Host "Error: No WSL distributions available. Please install an Ubuntu distribution or any Linux distribution in WSL." -ForegroundColor Red
-        exit 1
-    }
-}
-
+# Get WSL distribution - Ultra simplified approach
+$ubuntuDistro = "Ubuntu-22.04"  # Default to common distribution name
 Write-Host "Using WSL distribution: $ubuntuDistro" -ForegroundColor Cyan
 
 # Convert Windows path to WSL path with improved error handling
 try {
     Write-Host "Converting Windows path '$ModulePath' to WSL path..." -ForegroundColor Cyan
     
-    # Use the full --distribution parameter to avoid issues with special characters
+    # Use the most reliable format for WSL path conversion
     $wslPath = wsl.exe --distribution "$ubuntuDistro" --exec bash -c "wslpath '$ModulePath'" 2>&1
     
     if ($LASTEXITCODE -ne 0 -or $wslPath -match "Error" -or $wslPath -eq "") {
         Write-Host "Error: Failed to convert Windows path to WSL path. Output: $wslPath" -ForegroundColor Red
         
-        # Try an alternative approach for path conversion
-        Write-Host "Attempting alternative path conversion..." -ForegroundColor Yellow
+        # First fallback: Try alternative path conversion
+        Write-Host "Attempting alternative path conversion method 1..." -ForegroundColor Yellow
         $normalizedPath = $ModulePath.Replace('\', '/')
         $wslPath = wsl.exe --distribution "$ubuntuDistro" --exec bash -c "echo '$normalizedPath'" 2>&1
         
         if ($LASTEXITCODE -ne 0 -or $wslPath -eq "") {
-            Write-Host "Error: Alternative path conversion also failed." -ForegroundColor Red
-            exit 1
+            # Second fallback: Try direct path mapping based on known WSL path structure
+            Write-Host "Attempting alternative path conversion method 2..." -ForegroundColor Yellow
+            if ($ModulePath -match "^([A-Za-z]):\\(.*)$") {
+                $driveLetter = $Matches[1].ToLower()
+                $restOfPath = $Matches[2].Replace('\', '/')
+                $wslPath = "/mnt/$driveLetter/$restOfPath"
+                Write-Host "Manually constructed WSL path: $wslPath" -ForegroundColor Yellow
+            } else {
+                Write-Host "Error: Could not convert Windows path to WSL path." -ForegroundColor Red
+                exit 1
+            }
         }
-        
-        Write-Host "Alternative path conversion successful: $wslPath" -ForegroundColor Green
-    } else {
-        Write-Host "Path conversion successful: $wslPath" -ForegroundColor Green
     }
+    
+    Write-Host "Path conversion successful: $wslPath" -ForegroundColor Green
 } catch {
     Write-Host "Error converting path: $_" -ForegroundColor Red
     exit 1
@@ -311,41 +305,38 @@ try {
     Write-Host "Error running terraform-docs: $_" -ForegroundColor Red
 }
 
-Write-Host "`nAll checks completed!" -ForegroundColor Green
-Write-Host "Please review the output and fix any issues identified by the tools." -ForegroundColor Cyan
-
-# Step 4: Validate module structure (optional)
-Write-Host "`nStep 4: Validating module structure..." -ForegroundColor Yellow
-try {
-    # Define expected files for a standard Terraform module
-    $expectedFiles = @("main.tf", "variables.tf", "outputs.tf", "README.md")
-    $recommendedFiles = @("required_providers.tf", "versions.tf", "examples/", "test/")
-    
-    # Check for expected files
-    Write-Host "Checking for essential module files..." -ForegroundColor Cyan
-    foreach ($file in $expectedFiles) {
-        $fileCheck = wsl.exe --distribution "$ubuntuDistro" --exec bash -c "test -e '$wslPath/$file' && echo 'exists' || echo 'missing'"
-        if ($fileCheck -eq "missing") {
-            Write-Host "Warning: Essential file '$file' is missing from the module." -ForegroundColor Yellow
-        } else {
-            Write-Host "Essential file '$file' exists." -ForegroundColor Green
+# Step 4: Validate module structure (if not skipped)
+if (-not $SkipValidation) {
+    Write-Host "`nStep 4: Validating module structure..." -ForegroundColor Yellow
+    try {
+        # Define expected files for a standard Terraform module
+        $expectedFiles = @("main.tf", "variables.tf", "outputs.tf", "README.md")
+        $recommendedFiles = @("required_providers.tf", "versions.tf", "examples/", "test/")
+          # Check for expected files
+        Write-Host "Checking for essential module files..." -ForegroundColor Cyan
+        foreach ($file in $expectedFiles) {
+            $fileCheck = wsl.exe --distribution "$ubuntuDistro" --exec bash -c "test -e '$wslPath/$file' && echo 'exists' || echo 'missing'"
+            if ($fileCheck -eq "missing") {
+                Write-Host "Warning: Essential file '$file' is missing from the module." -ForegroundColor Yellow
+            } else {
+                Write-Host "Essential file '$file' exists." -ForegroundColor Green
+            }
         }
-    }
-    
-    # Check for recommended files
-    Write-Host "`nChecking for recommended module files/directories..." -ForegroundColor Cyan
-    foreach ($file in $recommendedFiles) {
-        $fileCheck = wsl.exe --distribution "$ubuntuDistro" --exec bash -c "test -e '$wslPath/$file' && echo 'exists' || echo 'missing'"
-        if ($fileCheck -eq "missing") {
-            Write-Host "Note: Recommended file/directory '$file' is missing from the module." -ForegroundColor Gray
-        } else {
-            Write-Host "Recommended file/directory '$file' exists." -ForegroundColor Green
+          # Check for recommended files
+        Write-Host "`nChecking for recommended module files/directories..." -ForegroundColor Cyan
+        foreach ($file in $recommendedFiles) {
+            $fileCheck = wsl.exe --distribution "$ubuntuDistro" --exec bash -c "test -e '$wslPath/$file' && echo 'exists' || echo 'missing'"
+            if ($fileCheck -eq "missing") {
+                Write-Host "Note: Recommended file/directory '$file' is missing from the module." -ForegroundColor Gray
+            } else {
+                Write-Host "Recommended file/directory '$file' exists." -ForegroundColor Green
+            }
         }
+        
+        Write-Host "`nModule structure validation completed." -ForegroundColor Cyan
+    } catch {
+        Write-Host "Error validating module structure: $_" -ForegroundColor Red
     }
-    
-    Write-Host "`nModule structure validation completed." -ForegroundColor Cyan
-} catch {
-    Write-Host "Error validating module structure: $_" -ForegroundColor Red
 }
 
 Write-Host "`nAll checks and validations completed!" -ForegroundColor Green
@@ -353,7 +344,7 @@ Write-Host "Please review the output and address any issues identified by the to
 
 # Run Azure Module check if specified
 if ($AzureModuleCheck) {
-    $complianceScore = Test-AzureModuleCriterion -ModulePath $ModulePath -WslPath $wslPath -Distribution "$ubuntuDistro"
+    $complianceScore = Test-AzureModuleCriterion -ModulePath $ModulePath -WslPath $wslPath -Distribution $ubuntuDistro
     
     if ($complianceScore -ge 80) {
         Write-Host "`nModule meets Azure Terraform Module Catalog Criterion with a score of $complianceScore%." -ForegroundColor Green

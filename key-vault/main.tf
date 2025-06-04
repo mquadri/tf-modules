@@ -1,8 +1,8 @@
 module "avm-res-keyvault-vault" {
-  source                          = "Azure/avm-res-keyvault-vault/azurerm"
-  version                         = "0.9.1"
-  location                        = var.location
-  name                            = "kv-${appname}-${environment}-${location}-${additionalcontext}"
+  source   = "Azure/avm-res-keyvault-vault/azurerm"
+  version  = "0.9.1"
+  location = var.location
+  name     = "kv-${appname}-${environment}-${location}-${additionalcontext}"
   #name                            = var.existing_name != null ? var.existing_name : "kv${local.naming}${var.additionalcontext}"
   resource_group_name             = var.resource_group_name
   tenant_id                       = var.tenant_id

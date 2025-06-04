@@ -25,7 +25,7 @@ module "key-vault-application" {
   rbac_enabled         = var.rbac_enabled
   msftmigration        = false
   env                  = var.env
-  
+
 
   providers = {
     azurerm = azurerm.main

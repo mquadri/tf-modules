@@ -1,7 +1,7 @@
 # Example main.tf for adh-compute-hostgroup module
 
 module "test_adh_hostgroup" { # Renamed module instance for clarity
-  source  = "../../" # Corrected path assuming simple_usage is one level down from module root
+  source = "../../"           # Corrected path assuming simple_usage is one level down from module root
 
   # Pass mandatory tags directly
   app_id        = var.app_id

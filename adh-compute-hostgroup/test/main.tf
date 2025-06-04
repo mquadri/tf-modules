@@ -29,7 +29,7 @@ module "test_adh_hostgroup" {
   location                    = azurerm_resource_group.test_rg.location
   platform_fault_domain_count = 1 # Minimal for testing
   automatic_placement_enabled = true
-  zone                        = "1" # Ensure this is valid for the location if not using a region with no zone support
+  zone                        = "1"   # Ensure this is valid for the location if not using a region with no zone support
   enable_telemetry            = false # Typically false for tests
 
   dedicated_hosts = {
