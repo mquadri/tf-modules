@@ -37,6 +37,7 @@ module "avm-res-containerregistry-registry" {
   georeplications               = var.georeplications
   private_endpoints             = var.private_endpoints
   diagnostic_settings           = var.diagnostic_settings
+
   # Optional feature configurations
   network_rule_set  = local.network_rule_set
   retention_policy  = local.retention_policy
