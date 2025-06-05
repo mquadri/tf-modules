@@ -3,10 +3,9 @@ data "azuread_group" "group" {
 }
 
 data "azuread_service_principal" "gcp_sso_app_sp" {
-  display_name = "Google Cloud (GCP Lumen SSO)"
+  display_name = var.gcp_sso_service_principal_display_name
 }
 
 data "azuread_service_principal" "gcp_prov_app_sp" {
-  display_name = "Google Cloud (GCP Lumen Provisioning)"
+  display_name = var.gcp_prov_service_principal_display_name
 }
-

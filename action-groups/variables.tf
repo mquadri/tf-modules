@@ -17,7 +17,7 @@ variable "action_groups" {
     short_name          = string
     resource_group_name = string
     enabled             = optional(bool)
-    location            = optional(string)
+    location            = optional(string) # Audit: Clarify location default (global if not specified by Azure)
     tags                = optional(map(string))
     webhook_receivers = optional(list(object({
       name                    = string
@@ -105,6 +105,12 @@ variable "action_groups" {
   }))
 
   default = {}
+  validation {
+    condition = alltrue([
+      for k, v in var.action_groups : v.name != null && v.short_name != null
+    ])
+    error_message = "Each action group must have a 'name' and 'short_name' defined."
+  }
 }
 
 #tag variables
@@ -119,14 +125,26 @@ variable "environment" {
   type        = string
 
   validation {
-    condition     = contains(["PROD", "TEST", "DEV", "SANDBOX", "NON-PROD"], var.environment)
-    error_message = "The environment must be one of the following values: PROD, TEST, DEV, SANDBOX, NON-PROD"
+    condition     = contains(["PROD", "TEST", "DEV", "SANDBOX", "NON-PROD", "QA", "STAGE", "PROD-DR"], upper(var.environment))
+    error_message = "The environment must be one of the allowed values: PROD, TEST, DEV, SANDBOX, NON-PROD, QA, STAGE, PROD-DR (case-insensitive)."
   }
 }
 
 variable "msftmigration" {
   description = "The migration tag used."
   type        = string
+  default     = null # Allowing null if not always applicable
 }
 
+variable "mal_id" {
+  description = "The MAL ID for tagging purposes. This is a mandatory tag for Lumen resources."
+  type        = string
+  # No default to make it effectively required at the root module level.
+  # The locals block in main.tf will ensure it's applied.
+}
 
+variable "tags" {
+  description = "A map of additional custom tags to apply to the Action Group resources."
+  type        = map(string)
+  default     = {}
+}

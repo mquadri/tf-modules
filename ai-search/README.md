@@ -350,3 +350,14 @@ Description: The ID of the machine learning workspace.
 No modules.
 
 <!-- END_TF_DOCS -->
+
+## Lumen Wrapper Information
+
+This Terraform module is a Lumen-standard wrapper around the Azure AVM module `Azure/avm-res-search-searchservice/azurerm`. It simplifies deployment of Azure AI Search services by enforcing Lumen's mandatory tagging (`app_id`, `environment`, `msftmigration`, `mal_id`) and providing a consistent interface.
+
+Please refer to the underlying AVM module documentation for detailed information on all configurable parameters within the `search_service` variable. This wrapper passes through most configurations to the AVM module while ensuring Lumen standards are met.
+
+## Contributing
+
+Please refer to the main repository's contribution guidelines. For issues or feature requests specific to this module, please open an issue in the repository.
+Ensure any contributions align with the Lumen Terraform standards and pass pre-commit checks.

@@ -95,3 +95,18 @@
 | <a name="output_project_resource"></a> [project\_resource](#output\_project\_resource) | Resource of the instance of Azure AI Project. |
 | <a name="output_workspace_name"></a> [workspace\_name](#output\_workspace\_name) | n/a |
 <!-- END_TF_DOCS -->
+
+## Lumen Wrapper Information
+
+This Terraform module provisions Azure AI Studio components (AI Hub, AI Project, AI Services) primarily using `azapi_resource`. It is designed to integrate with Lumen's tagging standards.
+
+## Critical Issues
+
+*   **Local Submodule Dependency**: This module uses `source = "../private-endpoint"` for its private endpoint functionality. This relative path dependency means the module is not self-contained and requires the `private-endpoint` module to be located in the parent directory. This severely impacts portability and standard module usage. This path should be parameterized or the private endpoint module should be sourced from a standard remote location (e.g., Git repository or Terraform Registry).
+*   **Deprecated Variables**: The `variables.tf` file contains numerous deprecated individual tag variables (e.g., `appid`, `env`, `costCostCenter`, etc.) and their associated `validation_warning` resources. These should be manually removed in a future refactoring effort. Users should rely on the top-level `app_id`, `environment`, `msftmigration`, `mal_id` variables and the general `tags` map for custom tagging.
+
+## Contributing
+
+Please refer to the main repository's contribution guidelines. For issues or feature requests specific to this module, please open an issue in the repository.
+Ensure any contributions align with the Lumen Terraform standards and pass pre-commit checks.
+Consider addressing the "Critical Issues" mentioned above as a priority for contributions.

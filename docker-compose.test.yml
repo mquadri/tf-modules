@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  postgres_db:
+    image: postgres:13
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: testuser
+      POSTGRES_PASSWORD: testpassword
+      POSTGRES_DB: testdb
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis_cache:
+    image: redis:6
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  # Placeholder for the application under test
+  # app:
+  #   build: . # Assuming a Dockerfile exists in the current directory
+  #   ports:
+  #     - "8080:8080" # Example port mapping
+  #   depends_on:
+  #     - postgres_db
+  #     - redis_cache
+  #   environment:
+  #     DB_HOST: postgres_db
+  #     DB_PORT: 5432
+  #     DB_USER: testuser
+  #     DB_PASSWORD: testpassword
+  #     DB_NAME: testdb
+  #     REDIS_HOST: redis_cache
+  #     REDIS_PORT: 6379
+
+volumes:
+  postgres_data:
+  redis_data:

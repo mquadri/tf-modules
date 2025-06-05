@@ -1,224 +1,435 @@
-# tf-modules-azure
+# terraform-docs
 
-This module aims to have all the modules that are used to deploy to azure as well as related applications such as databricks
+[![Build Status](https://github.com/terraform-docs/terraform-docs/workflows/ci/badge.svg)](https://github.com/terraform-docs/terraform-docs/actions) [![GoDoc](https://pkg.go.dev/badge/github.com/terraform-docs/terraform-docs)](https://pkg.go.dev/github.com/terraform-docs/terraform-docs) [![Go Report Card](https://goreportcard.com/badge/github.com/terraform-docs/terraform-docs)](https://goreportcard.com/report/github.com/terraform-docs/terraform-docs) [![Codecov Report](https://codecov.io/gh/terraform-docs/terraform-docs/branch/master/graph/badge.svg)](https://codecov.io/gh/terraform-docs/terraform-docs) [![License](https://img.shields.io/github/license/terraform-docs/terraform-docs)](https://github.com/terraform-docs/terraform-docs/blob/master/LICENSE) [![Latest release](https://img.shields.io/github/v/release/terraform-docs/terraform-docs)](https://github.com/terraform-docs/terraform-docs/releases)
 
-<!-- TOC -->
+![terraform-docs-teaser](./images/terraform-docs-teaser.png)
 
-- [tf-modules-azure](#tf-modules-azure)
-    - [Modules](#modules)
-    - [Adopting Terragrunt: Workflow Guidelines](#adopting-terragrunt-workflow-guidelines)
-    - [Related Information](#related-information)
-        - [Regions and Network space](#regions-and-network-space)
-        - [DNS Servers](#dns-servers)
-            - [West Central US](#west-central-us)
-            - [North Central US](#north-central-us)
-            - [East US 2](#east-us-2)
-            - [Central US](#central-us)
-    - [CHANGELOG](#changelog)
-    - [How to contribute](#how-to-contribute)
+Sponsored by [Scalr - Terraform Automation & Collaboration Software](https://scalr.com/?utm_source=terraform-docs)
 
-<!-- /TOC -->
+<a href="https://www.scalr.com/?utm_source=terraform-docs" target="_blank"><img src="https://bit.ly/2T7Qm3U" alt="Scalr - Terraform Automation & Collaboration Software" width="175" height="40" /></a>
 
-## Modules
+## What is terraform-docs
 
-| Folder | README | Example | AVM |
-|--------|--------|---------|-----|
-| [Standard_Tags](./Standard_Tags) | [README.md](./Standard_Tags/README.md) |  | :x: |
-| [associate_gcp_eas](./aad/associate_gcp_eas) | [README.md](./aad/associate_gcp_eas/README.md) |  | :x: |
-| [group](./aad/group) | [README.md](./aad/group/README.md) |  | :x: |
-| [microsoft_template_group](./aad/microsoft_template_group) | [README.md](./aad/microsoft_template_group/README.md) |  | :x: |
-| [acr](./acr) | [README.md](./acr/README.md) | [examples](./acr/examples) | :white_check_mark: |
-| [action-groups](./action-groups) | [README.md](./action-groups/README.md) | [examples](./action-groups/examples) | :x: |
-| [ai-search](./ai-search) | [README.md](./ai-search/README.md) | [examples](./ai-search/examples) | :white_check_mark: |
-| [ai-studio](./ai-studio) | [README.md](./ai-studio/README.md) | [examples](./ai-studio/examples) | :x: |
-| [aks](./aks) | [README.md](./aks/README.md) | [examples](./aks/examples) | :white_check_mark: |
-| [alerts](./alerts) | [README.md](./alerts/README.md) | [examples](./alerts/examples) | :x: |
-| [api-management](./api-management) | [README.md](./api-management/README.md) |  | :x: |
-| [app-gateway](./app-gateway) | [README.md](./app-gateway/README.md) | [examples](./app-gateway/examples) | :white_check_mark: |
-| [v2](./app-gateway/v2) | [README.md](./app-gateway/v2/README.md) |  | :x: |
-| [v3](./app-gateway/v3) | [README.md](./app-gateway/v3/README.md) |  | :x: |
-| [app-insight](./app-insight) | [README.md](./app-insight/README.md) | [examples](./app-insight/examples) | :white_check_mark: |
-| [azure-virtual-machine](./appdynamics/azure-virtual-machine) | [README.md](./appdynamics/azure-virtual-machine/README.md) |  | :x: |
-| [appdynamics](./appdynamics) | [README.md](./appdynamics/README.md) |  | :x: |
-| [availability_sets](./availability_sets) | [README.md](./availability_sets/README.md) | [examples](./availability_sets/examples) | :x: |
-| [avd-application-group](./avd-application-group) | [README.md](./avd-application-group/README.md) | [examples](./avd-application-group/examples) | :white_check_mark: |
-| [avd-host-pools](./avd-host-pools) | [README.md](./avd-host-pools/README.md) | [examples](./avd-host-pools/examples) | :white_check_mark: |
-| [avd-insights](./avd-insights) | [README.md](./avd-insights/README.md) | [examples](./avd-insights/examples) | :white_check_mark: |
-| [avd-management-plane](./avd-management-plane) | [README.md](./avd-management-plane/README.md) | [examples](./avd-management-plane/examples) | :white_check_mark: |
-| [avd-scaling-plan](./avd-scaling-plan) | [README.md](./avd-scaling-plan/README.md) | [examples](./avd-scaling-plan/examples) | :white_check_mark: |
-| [avd-workspace](./avd-workspace) | [README.md](./avd-workspace/README.md) | [examples](./avd-workspace/examples) | :white_check_mark: |
-| [azure-bot-service](./azure-bot-service) | [README.md](./azure-bot-service/README.md) | [example](./azure-bot-service/example) | :x: |
-| [azure-firewall-policy](./azure-firewall-policy) | [README.md](./azure-firewall-policy/README.md) | [examples](./azure-firewall-policy/examples) | :white_check_mark: |
-| [azure-firewall](./azure-firewall) | [README.md](./azure-firewall/README.md) | [examples](./azure-firewall/examples) | :white_check_mark: |
-| [azure_monitor_workbook](./azure_monitor_workbook) | [README.md](./azure_monitor_workbook/README.md) | [examples](./azure_monitor_workbook/examples) | :x: |
-| [backup-protected-file-share](./backup-protected-file-share) | [README.md](./backup-protected-file-share/README.md) | [examples](./backup-protected-file-share/examples) | :x: |
-| [bastion-host](./bastion-host) | [README.md](./bastion-host/README.md) | [example](./bastion-host/example) | :white_check_mark: |
-| [vm-legacy](./blueprints/vm-legacy) | [README.md](./blueprints/vm-legacy/README.md) |  | :x: |
-| [waf-frontdoor-classic-legacy](./blueprints/waf-frontdoor-classic-legacy) | [README.md](./blueprints/waf-frontdoor-classic-legacy/README.md) |  | :x: |
-| [waf-legacy](./blueprints/waf-legacy) | [README.md](./blueprints/waf-legacy/README.md) |  | :x: |
-| [consumption_budget](./consumption_budget) | [README.md](./consumption_budget/README.md) | [examples](./consumption_budget/examples) | :x: |
-| [cosmos-db-account](./cosmos-db-account) | [README.md](./cosmos-db-account/README.md) |  | :x: |
-| [cosmos-sql-db](./cosmos-sql-db) | [README.md](./cosmos-sql-db/README.md) |  | :x: |
-| [cosmosdb](./cosmosdb) | [README.md](./cosmosdb/README.md) | [examples](./cosmosdb/examples) | :white_check_mark: |
-| [custom-role-definition](./custom-role-definition) | [README.md](./custom-role-definition/README.md) | [examples](./custom-role-definition/examples) | :x: |
-| [data-protection-backup](./data-protection-backup) | [README.md](./data-protection-backup/README.md) | [examples](./data-protection-backup/examples) | :x: |
-| [data_collection_rules](./data_collection_rules) | [README.md](./data_collection_rules/README.md) | [examples](./data_collection_rules/examples) | :x: |
-| [databricks-serverless-compute](./databricks-serverless-compute) | [README.md](./databricks-serverless-compute/README.md) | [examples](./databricks-serverless-compute/examples) | :x: |
-| [databricks](./databricks) | [README.md](./databricks/README.md) |  | :x: |
-| [v2](./databricks/v2) | [README.md](./databricks/v2/README.md) |  | :x: |
-| [dataexplorer](./dataexplorer) | [README.md](./dataexplorer/README.md) |  | :x: |
-| [datafactory](./datafactory) | [README.md](./datafactory/README.md) |  | :x: |
-| [diagnostic-setting](./diagnostic-setting) | [README.md](./diagnostic-setting/README.md) | [examples](./diagnostic-setting/examples) | :x: |
-| [dns-private-resolver](./dns-private-resolver) | [README.md](./dns-private-resolver/README.md) | [examples](./dns-private-resolver/examples) | :white_check_mark: |
-| [express-route](./express-route) | [README.md](./express-route/README.md) | [examples](./express-route/examples) | :white_check_mark: |
-| [expressroute-circuit](./expressroute-circuit) | [README.md](./expressroute-circuit/README.md) |  | :x: |
-| [expressroute-direct](./expressroute-direct) | [README.md](./expressroute-direct/README.md) |  | :x: |
-| [expressroute-peeringerc](./expressroute-peeringerc) | [README.md](./expressroute-peeringerc/README.md) |  | :x: |
-| [fabric-capacity](./fabric-capacity) | [README.md](./fabric-capacity/README.md) | [examples](./fabric-capacity/examples) | :x: |
-| [function-app](./function-app) | [README.md](./function-app/README.md) | [example](./function-app/example) | :white_check_mark: |
-| [hdinsight-spark](./hdinsight-spark) | [README.md](./hdinsight-spark/README.md) | [examples](./hdinsight-spark/examples) | :x: |
-| [kured](./k8s-addons/modules/kured) | [README.md](./k8s-addons/modules/kured/README.md) |  | :x: |
-| [key-vault-access-policy](./key-vault-access-policy) | [README.md](./key-vault-access-policy/README.md) |  | :x: |
-| [key-vault](./key-vault) | [README.md](./key-vault/README.md) | [examples](./key-vault/examples) | :white_check_mark: |
-| [language-service](./language-service) | [README.md](./language-service/README.md) | [examples](./language-service/examples) | :white_check_mark: |
-| [load_balancer](./load_balancer) | [README.md](./load_balancer/README.md) | [examples](./load_balancer/examples) | :white_check_mark: |
-| [log-analytics-ws-table](./log-analytics-ws-table) | [README.md](./log-analytics-ws-table/README.md) | [examples](./log-analytics-ws-table/examples) | :x: |
-| [log-analytics-ws](./log-analytics-ws) | [README.md](./log-analytics-ws/README.md) | [examples](./log-analytics-ws/examples) | :white_check_mark: |
-| [management-groups](./management-groups) | [README.md](./management-groups/README.md) |  | :x: |
-| [nat-gateway](./nat-gateway) | [README.md](./nat-gateway/README.md) | [examples](./nat-gateway/examples) | :white_check_mark: |
-| [nsg](./nsg) | [README.md](./nsg/README.md) | [examples](./nsg/examples) | :x: |
-| [nsg_association](./nsg_association) | [README.md](./nsg_association/README.md) | [examples](./nsg_association/examples) | :x: |
-| [openai](./openai) | [README.md](./openai/README.md) | [examples](./openai/examples) | :white_check_mark: |
-| [palo-panorama](./palo-panorama) | [README.md](./palo-panorama/README.md) |  | :x: |
-| [palo_alto](./palo_alto) | [README.md](./palo_alto/README.md) | [examples](./palo_alto/examples) | :x: |
-| [palovm](./palovm) | [README.md](./palovm/README.md) |  | :x: |
-| [panorama](./panorama) | [README.md](./panorama/README.md) | [examples](./panorama/examples) | :x: |
-| [pim-eligible](./pim-eligible) | [README.md](./pim-eligible/README.md) | [examples](./pim-eligible/examples) | :x: |
-| [postgre-sql](./postgre-sql) | [README.md](./postgre-sql/README.md) | [examples](./postgre-sql/examples) | :white_check_mark: |
-| [private-dns-zone](./private-dns-zone) | [README.md](./private-dns-zone/README.md) | [examples](./private-dns-zone/examples) | :white_check_mark: |
-| [private-endpoint](./private-endpoint) | [README.md](./private-endpoint/README.md) | [examples](./private-endpoint/examples) | :x: |
-| [private-link-service](./private-link-service) | [README.md](./private-link-service/README.md) | [examples](./private-link-service/examples) | :x: |
-| [public-ip-address](./public-ip-address) | [README.md](./public-ip-address/README.md) | [examples](./public-ip-address/examples) | :white_check_mark: |
-| [rbac-assignment](./rbac-assignment) | [README.md](./rbac-assignment/README.md) |  | :white_check_mark: |
-| [recovery-services-vault](./recovery-services-vault) | [README.md](./recovery-services-vault/README.md) | [examples](./recovery-services-vault/examples) | :white_check_mark: |
-| [redis-cache](./redis-cache) | [README.md](./redis-cache/README.md) |  | :x: |
-| [reserved-instances](./reserved-instances) | [README.md](./reserved-instances/README.md) | [examples](./reserved-instances/examples) | :x: |
-| [resource-groups](./resource-groups) | [README.md](./resource-groups/README.md) | [examples](./resource-groups/examples) | :white_check_mark: |
-| [route-table](./route-table) | [README.md](./route-table/README.md) | [examples](./route-table/examples) | :white_check_mark: |
-| [shared_image](./shared_image) | [README.md](./shared_image/README.md) | [examples](./shared_image/examples) | :x: |
-| [shared_image_gallery](./shared_image_gallery) | [README.md](./shared_image_gallery/README.md) | [examples](./shared_image_gallery/examples) | :x: |
-| [sql-database](./sql-database) | [README.md](./sql-database/README.md) | [examples](./sql-database/examples) | :x: |
-| [sql-managed-database](./sql-managed-database) | [README.md](./sql-managed-database/README.md) |  | :x: |
-| [sql-managed-instance](./sql-managed-instance) | [README.md](./sql-managed-instance/README.md) |  | :x: |
-| [sql-server](./sql-server) | [README.md](./sql-server/README.md) |  | :x: |
-| [sql_server](./sql_server) | [README.md](./sql_server/README.md) | [examples](./sql_server/examples) | :white_check_mark: |
-| [storage-account-backup-container](./storage-account-backup-container) | [README.md](./storage-account-backup-container/README.md) | [examples](./storage-account-backup-container/examples) | :x: |
-| [storage-account-container](./storage-account-container) | [README.md](./storage-account-container/README.md) |  | :x: |
-| [storage-account-datalake](./storage-account-datalake) | [README.md](./storage-account-datalake/README.md) |  | :x: |
-| [storage-account](./storage-account) | [README.md](./storage-account/README.md) | [examples](./storage-account/examples) | :white_check_mark: |
-| [subnet](./subnet) | [README.md](./subnet/README.md) | [examples](./subnet/examples) | :white_check_mark: |
-| [subscriptions](./subscriptions) | [README.md](./subscriptions/README.md) | [examples](./subscriptions/examples) | :x: |
-| [synapse-analytics](./synapse-analytics) | [README.md](./synapse-analytics/README.md) | [examples](./synapse-analytics/examples) | :x: |
-| [synapse-spark-pool](./synapse/synapse-spark-pool) | [README.md](./synapse/synapse-spark-pool/README.md) |  | :x: |
-| [synapse-sql-pool](./synapse/synapse-sql-pool) | [README.md](./synapse/synapse-sql-pool/README.md) |  | :x: |
-| [synapse-workspace](./synapse/synapse-workspace) | [README.md](./synapse/synapse-workspace/README.md) |  | :x: |
-| [terraform](./terraform-modules/terraform) | [README.md](./terraform-modules/terraform/README.md) |  | :x: |
-| [user-assigned-identity](./user-assigned-identity) | [README.md](./user-assigned-identity/README.md) | [examples](./user-assigned-identity/examples) | :white_check_mark: |
-| [virtual-wan-hub](./virtual-wan-hub) | [README.md](./virtual-wan-hub/README.md) | [examples](./virtual-wan-hub/examples) | :white_check_mark: |
-| [vm](./vm) | [README.md](./vm/README.md) | [examples](./vm/examples) | :white_check_mark: |
-| [avm-res-network-virtualnetwork](./vnet/.terraform/modules/avm-res-network-virtualnetwork) | [README.md](./vnet/.terraform/modules/avm-res-network-virtualnetwork/README.md) | [examples](./vnet/.terraform/modules/avm-res-network-virtualnetwork/examples) | :white_check_mark: |
-| [peering](./vnet/.terraform/modules/avm-res-network-virtualnetwork/modules/peering) | [README.md](./vnet/.terraform/modules/avm-res-network-virtualnetwork/modules/peering/README.md) |  | :white_check_mark: |
-| [subnet](./vnet/.terraform/modules/avm-res-network-virtualnetwork/modules/subnet) | [README.md](./vnet/.terraform/modules/avm-res-network-virtualnetwork/modules/subnet/README.md) |  | :white_check_mark: |
-| [vnet](./vnet) | [README.md](./vnet/README.md) | [examples](./vnet/examples) | :white_check_mark: |
-| [waf-frontdoor-classic](./waf-frontdoor-classic) | [README.md](./waf-frontdoor-classic/README.md) |  | :x: |
-| [waf](./waf) | [README.md](./waf/README.md) | [examples](./waf/examples) | :x: |
-| [wiz](./wiz) | [README.md](./wiz/README.md) | [examples](./wiz/examples) | :x: |
+A utility to generate documentation from Terraform modules in various output formats.
 
+## Installation
 
+macOS users can install using [Homebrew]:
 
-## Adopting Terragrunt: Workflow Guidelines
- 1) Step-by-step Guide for Terragrunt adoption in Tf Module Repo
-
- The following are the steps each team should follow to adopt Terragrunt and ensure consistency.
-
-Folder Structure
-
-**Terragrunt Configuration**:
-   - In each Modules folder, create a root Terragrunt file (`terragrunt.hcl`) with the input block added as shown below. Copy all the tfvars values to the root terragrunt.hcl file.
-![alt text](assets/image_root_hcl.png)
-   - Create an exact copy of root (`terragrunt.hcl`) inside the example folders, where all inputs are specified (inputs copied from tfvars file).
-![alt text](assets/image_example_hcl.png)
-
-The final structure should look like this:
-
-![alt text](assets/image_terragrunt.hcl.png)
-
- Example Folder Structure
-
+```bash
+brew install terraform-docs
 ```
 
-├── resource-groups/
-│   ├── examples/
-│   │   ├── terragrunt.hcl
-|   |
-│   └── terragrunt.hcl
-├── nsg/
-│   ├── examples/
-│   │   ├── terragrunt.hcl/
-│   └── terragrunt.hcl
+or
+
+```bash
+brew install terraform-docs/tap/terraform-docs
 ```
-## Related Information
 
-### Regions and Network space
+Windows users can install using [Scoop]:
 
-*Lumen Azure West Central US* - 8.30.128.0/21 and 148.155.160.0/21
+```bash
+scoop bucket add terraform-docs https://github.com/terraform-docs/scoop-bucket
+scoop install terraform-docs
+```
 
-*Lumen Azure North Central US* - 8.30.136.0/21 and 148.155.168.0/21
+or [Chocolatey]:
 
-*Lumen Azure East US 2* - 148.155.144.0/22
+```bash
+choco install terraform-docs
+```
 
-*Lumen Azure Central US* - 148.155.148.0/22
+Stable binaries are also available on the [releases] page. To install, download the
+binary for your platform from "Assets" and place this into your `$PATH`:
 
-### DNS Servers
+```bash
+curl -Lo ./terraform-docs.tar.gz https://github.com/terraform-docs/terraform-docs/releases/download/v0.16.0/terraform-docs-v0.16.0-$(uname)-amd64.tar.gz
+tar -xzf terraform-docs.tar.gz
+chmod +x terraform-docs
+mv terraform-docs /usr/local/terraform-docs
+```
 
-#### West Central US
+**NOTE:** Windows releases are in `ZIP` format.
 
-8.30.135.252
-8.30.135.253
+The latest version can be installed using `go install` or `go get`:
 
-#### North Central US
+```bash
+# go1.17+
+go install github.com/terraform-docs/terraform-docs@v0.16.0
+```
 
-8.30.143.252
-8.30.143.254
+```bash
+# go1.16
+GO111MODULE="on" go get github.com/terraform-docs/terraform-docs@v0.16.0
+```
 
-#### East US 2
+**NOTE:** please use the latest Go to do this, minimum `go1.16` is required.
 
-148.155.136.100
-148.155.136.101
+This will put `terraform-docs` in `$(go env GOPATH)/bin`. If you encounter the error
+`terraform-docs: command not found` after installation then you may need to either add
+that directory to your `$PATH` as shown [here] or do a manual installation by cloning
+the repo and run `make build` from the repository which will put `terraform-docs` in:
 
-#### Central US
+```bash
+$(go env GOPATH)/src/github.com/terraform-docs/terraform-docs/bin/$(uname | tr '[:upper:]' '[:lower:]')-amd64/terraform-docs
+```
 
-148.155.136.164
-148.155.136.165
+## Usage
 
-## CHANGELOG
+### Running the binary directly
 
-[CHANGELOG](./CHANGELOG.md)
+To run and generate documentation into README within a directory:
 
-## How to contribute
+```bash
+terraform-docs markdown table --output-file README.md --output-mode inject /path/to/module
+```
 
-Please note that in order to contribute you are required to follow the [Enablement Process](https://centurylink.sharepoint.com/sites/CCOE/SitePages/CCOE-Engineer-Enablement.aspx)
+Check [`output`] configuration for more details and examples.
 
-Once done you can
+### Using docker
 
-1. Create a branch following branching strategy
-2. Make your changes
-3. Verify
-    1. tflint -> `tflint --init -c ../.tflint.hcl ; tflint`
-    2. tfsec
-    3. terraform fmt -> `terraform fmt -recursive`
-    4. Update docs -> `terraform-docs markdown ./ --output-file README.md`
-4. Commit your changes
-5. Push your changes
-6. Create a PR
+terraform-docs can be run as a container by mounting a directory with `.tf`
+files in it and run the following command:
 
+```bash
+docker run --rm --volume "$(pwd):/terraform-docs" -u $(id -u) quay.io/terraform-docs/terraform-docs:0.16.0 markdown /terraform-docs
+```
+
+If `output.file` is not enabled for this module, generated output can be redirected
+back to a file:
+
+```bash
+docker run --rm --volume "$(pwd):/terraform-docs" -u $(id -u) quay.io/terraform-docs/terraform-docs:0.16.0 markdown /terraform-docs > doc.md
+```
+
+**NOTE:** Docker tag `latest` refers to _latest_ stable released version and `edge`
+refers to HEAD of `master` at any given point in time.
+
+### Using GitHub Actions
+
+To use terraform-docs GitHub Action, configure a YAML workflow file (e.g.
+`.github/workflows/documentation.yml`) with the following:
+
+```yaml
+name: Generate terraform docs
+on:
+  - pull_request
+
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        ref: ${{ github.event.pull_request.head.ref }}
+
+    - name: Render terraform docs and push changes back to PR
+      uses: terraform-docs/gh-actions@main
+      with:
+        working-dir: .
+        output-file: README.md
+        output-method: inject
+        git-push: "true"
+```
+
+Read more about [terraform-docs GitHub Action] and its configuration and
+examples.
+
+### pre-commit hook
+
+With pre-commit, you can ensure your Terraform module documentation is kept
+up-to-date each time you make a commit.
+
+First [install pre-commit] and then create or update a `.pre-commit-config.yaml`
+in the root of your Git repo with at least the following content:
+
+```yaml
+repos:
+  - repo: https://github.com/terraform-docs/terraform-docs
+    rev: "v0.16.0"
+    hooks:
+      - id: terraform-docs-go
+        args: ["markdown", "table", "--output-file", "README.md", "./mymodule/path"]
+```
+
+Then run:
+
+```bash
+pre-commit install
+pre-commit install-hooks
+```
+
+Further changes to your module's `.tf` files will cause an update to documentation
+when you make a commit.
+
+## Configuration
+
+terraform-docs can be configured with a yaml file. The default name of this file is
+`.terraform-docs.yml` and the path order for locating it is:
+
+1. root of module directory
+1. `.config/` folder at root of module directory
+1. current directory
+1. `.config/` folder at current directory
+1. `$HOME/.tfdocs.d/`
+
+```yaml
+formatter: "" # this is required
+
+version: ""
+
+header-from: main.tf
+footer-from: ""
+
+recursive:
+  enabled: false
+  path: modules
+
+sections:
+  hide: []
+  show: []
+
+content: ""
+
+output:
+  file: ""
+  mode: inject
+  template: |-
+    <!-- BEGIN_TF_DOCS -->
+    {{ .Content }}
+    <!-- END_TF_DOCS -->
+
+output-values:
+  enabled: false
+  from: ""
+
+sort:
+  enabled: true
+  by: name
+
+settings:
+  anchor: true
+  color: true
+  default: true
+  description: false
+  escape: true
+  hide-empty: false
+  html: true
+  indent: 2
+  lockfile: true
+  read-comments: true
+  required: true
+  sensitive: true
+  type: true
+```
+
+## Content Template
+
+Generated content can be customized further away with `content` in configuration.
+If the `content` is empty the default order of sections is used.
+
+Compatible formatters for customized content are `asciidoc` and `markdown`. `content`
+will be ignored for other formatters.
+
+`content` is a Go template with following additional variables:
+
+- `{{ .Header }}`
+- `{{ .Footer }}`
+- `{{ .Inputs }}`
+- `{{ .Modules }}`
+- `{{ .Outputs }}`
+- `{{ .Providers }}`
+- `{{ .Requirements }}`
+- `{{ .Resources }}`
+
+and following functions:
+
+- `{{ include "relative/path/to/file" }}`
+
+These variables are the generated output of individual sections in the selected
+formatter. For example `{{ .Inputs }}` is Markdown Table representation of _inputs_
+when formatter is set to `markdown table`.
+
+Note that sections visibility (i.e. `sections.show` and `sections.hide`) takes
+precedence over the `content`.
+
+Additionally there's also one extra special variable avaialble to the `content`:
+
+- `{{ .Module }}`
+
+As opposed to the other variables mentioned above, which are generated sections
+based on a selected formatter, the `{{ .Module }}` variable is just a `struct`
+representing a [Terraform module].
+
+````yaml
+content: |-
+  Any arbitrary text can be placed anywhere in the content
+
+  {{ .Header }}
+
+  and even in between sections
+
+  {{ .Providers }}
+
+  and they don't even need to be in the default order
+
+  {{ .Outputs }}
+
+  include any relative files
+
+  {{ include "relative/path/to/file" }}
+
+  {{ .Inputs }}
+
+  # Examples
+
+  ```hcl
+  {{ include "examples/foo/main.tf" }}
+  ```
+
+  ## Resources
+
+  {{ range .Module.Resources }}
+  - {{ .GetMode }}.{{ .Spec }} ({{ .Position.Filename }}#{{ .Position.Line }})
+  {{- end }}
+````
+
+## Build on top of terraform-docs
+
+terraform-docs primary use-case is to be utilized as a standalone binary, but
+some parts of it is also available publicly and can be imported in your project
+as a library.
+
+```go
+import (
+    "github.com/terraform-docs/terraform-docs/format"
+    "github.com/terraform-docs/terraform-docs/print"
+    "github.com/terraform-docs/terraform-docs/terraform"
+)
+
+// buildTerraformDocs for module root `path` and provided content `tmpl`.
+func buildTerraformDocs(path string, tmpl string) (string, error) {
+    config := print.DefaultConfig()
+    config.ModuleRoot = path // module root path (can be relative or absolute)
+
+    module, err := terraform.LoadWithOptions(config)
+    if err != nil {
+        return "", err
+    }
+
+    // Generate in Markdown Table format
+    formatter := format.NewMarkdownTable(config)
+
+    if err := formatter.Generate(module); err != nil {
+        return "", err
+    }
+
+    // // Note: if you don't intend to provide additional template for the generated
+    // // content, or the target format doesn't provide templating (e.g. json, yaml,
+    // // xml, or toml) you can use `Content()` function instead of `Render()`.
+    // // `Content()` returns all the sections combined with predefined order.
+    // return formatter.Content(), nil
+
+    return formatter.Render(tmpl)
+}
+```
+
+## Plugin
+
+Generated output can be heavily customized with [`content`], but if using that
+is not enough for your use-case, you can write your own plugin.
+
+In order to install a plugin the following steps are needed:
+
+- download the plugin and place it in `~/.tfdocs.d/plugins` (or `./.tfdocs.d/plugins`)
+- make sure the plugin file name is `tfdocs-format-<NAME>`
+- modify [`formatter`] of `.terraform-docs.yml` file to be `<NAME>`
+
+**Important notes:**
+
+- if the plugin file name is different than the example above, terraform-docs won't
+be able to to pick it up nor register it properly
+- you can only use plugin thorough `.terraform-docs.yml` file and it cannot be used
+with CLI arguments
+
+To create a new plugin create a new repository called `tfdocs-format-<NAME>` with
+following `main.go`:
+
+```go
+package main
+
+import (
+    _ "embed" //nolint
+
+    "github.com/terraform-docs/terraform-docs/plugin"
+    "github.com/terraform-docs/terraform-docs/print"
+    "github.com/terraform-docs/terraform-docs/template"
+    "github.com/terraform-docs/terraform-docs/terraform"
+)
+
+func main() {
+    plugin.Serve(&plugin.ServeOpts{
+        Name:    "<NAME>",
+        Version: "0.1.0",
+        Printer: printerFunc,
+    })
+}
+
+//go:embed sections.tmpl
+var tplCustom []byte
+
+// printerFunc the function being executed by the plugin client.
+func printerFunc(config *print.Config, module *terraform.Module) (string, error) {
+    tpl := template.New(config,
+        &template.Item{Name: "custom", Text: string(tplCustom)},
+    )
+
+    rendered, err := tpl.Render("custom", module)
+    if err != nil {
+        return "", err
+    }
+
+    return rendered, nil
+}
+```
+
+Please refer to [tfdocs-format-template] for more details. You can create a new
+repository from it by clicking on `Use this template` button.
+
+## Documentation
+
+- **Users**
+  - Read the [User Guide] to learn how to use terraform-docs
+  - Read the [Formats Guide] to learn about different output formats of terraform-docs
+  - Refer to [Config File Reference] for all the available configuration options
+- **Developers**
+  - Read [Contributing Guide] before submitting a pull request
+
+Visit [our website] for all documentation.
+
+## Community
+
+- Discuss terraform-docs on [Slack]
+
+## License
+
+MIT License - Copyright (c) 2021 The terraform-docs Authors.
+
+[Chocolatey]: https://www.chocolatey.org
+[Config File Reference]: https://terraform-docs.io/user-guide/configuration/
+[`content`]: https://terraform-docs.io/user-guide/configuration/content/
+[Contributing Guide]: CONTRIBUTING.md
+[Formats Guide]: https://terraform-docs.io/reference/terraform-docs/
+[`formatter`]: https://terraform-docs.io/user-guide/configuration/formatter/
+[here]: https://golang.org/doc/code.html#GOPATH
+[Homebrew]: https://brew.sh
+[install pre-commit]: https://pre-commit.com/#install
+[`output`]: https://terraform-docs.io/user-guide/configuration/output/
+[releases]: https://github.com/terraform-docs/terraform-docs/releases
+[Scoop]: https://scoop.sh/
+[Slack]: https://slack.terraform-docs.io/
+[terraform-docs GitHub Action]: https://github.com/terraform-docs/gh-actions
+[Terraform module]: https://pkg.go.dev/github.com/terraform-docs/terraform-docs/terraform#Module
+[tfdocs-format-template]: https://github.com/terraform-docs/tfdocs-format-template
+[our website]: https://terraform-docs.io/
+[User Guide]: https://terraform-docs.io/user-guide/introduction/

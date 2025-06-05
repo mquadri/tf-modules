@@ -3,6 +3,7 @@ locals {
     app_id        = var.app_id
     environment   = var.environment
     msftmigration = var.msftmigration
+    mal_id        = var.mal_id
   }
 }
 

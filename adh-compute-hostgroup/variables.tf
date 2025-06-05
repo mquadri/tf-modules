@@ -70,3 +70,9 @@ variable "tags" {
   type        = map(string)
   default     = {}
 }
+
+variable "mal_id" {
+  description = "The MAL ID for tagging purposes."
+  type        = string
+  default     = ""
+}

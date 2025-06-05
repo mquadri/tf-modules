@@ -52,5 +52,16 @@ The following resources are used by this module:
 
 # terraform-azurerm-avm-res-compute-hostgroup
 
-This Terraform module deploys dedicated host groups in Azure.
+This Terraform module deploys dedicated host groups in Azure. It wraps the `Azure/avm-res-compute-hostgroup/azurerm` AVM module and applies Lumen-standard mandatory tags (`app_id`, `environment`, `msftmigration`, `mal_id`).
+
+## Prerequisites
+
+*   Azure Subscription.
+*   Resource Group (this module can create one or use an existing one).
+*   Appropriate permissions to create resources.
+
+## Contributing
+
+Please refer to the main repository's contribution guidelines. For issues or feature requests specific to this module, please open an issue in the repository.
+Ensure any contributions align with the Lumen Terraform standards and pass pre-commit checks.
 

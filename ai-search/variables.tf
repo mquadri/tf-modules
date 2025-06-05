@@ -101,3 +101,15 @@ variable "msftmigration" {
   description = "The migration tag used."
   type        = string
 }
+
+variable "mal_id" {
+  description = "The MAL ID for tagging purposes. This will be merged with other tags."
+  type        = string
+  default     = ""
+}
+
+variable "tags" {
+  description = "A map of additional custom tags to apply to the Azure AI Search service. These will be merged with mandatory and per-service tags."
+  type        = map(string)
+  default     = {}
+}
