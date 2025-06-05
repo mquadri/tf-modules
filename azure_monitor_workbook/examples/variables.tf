@@ -22,7 +22,7 @@ variable "workbook_name" {
   description = "The name of the workbook"
   type        = string
   default     = ""
-} 
+}
 variable "appname" {
   description = "The name of the application"
   type        = string
@@ -112,7 +112,7 @@ variable "environment" {
   type        = string
 
   validation {
-    condition     = contains(["PROD", "TEST", "DEV", "SANDBOX","NON-PROD"], var.environment)
+    condition     = contains(["PROD", "TEST", "DEV", "SANDBOX", "NON-PROD"], var.environment)
     error_message = "The environment must be one of the following values: PROD, TEST, DEV, SANDBOX, NON-PROD"
   }
 }

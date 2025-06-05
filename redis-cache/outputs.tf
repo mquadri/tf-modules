@@ -22,9 +22,9 @@ output "redis_all_info" {
   description = "A map of all Redis cache information, including name, private endpoints, resource ID, and system-assigned MI principal ID."
   value = {
     for key, cache in module.redis_cache : key => {
-      name                           = cache.name
-      private_endpoints              = cache.private_endpoints
-      resource_id                    = cache.resource_id
+      name                            = cache.name
+      private_endpoints               = cache.private_endpoints
+      resource_id                     = cache.resource_id
       system_assigned_mi_principal_id = cache.system_assigned_mi_principal_id
     }
   }

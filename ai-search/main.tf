@@ -34,5 +34,5 @@ module "avm-res-search-searchservice" {
   semantic_search_sku                      = each.value.semantic_search_sku
   sku                                      = each.value.sku
   # Updated tag merging: mandatory tags > per-service instance tags > general module instance tags
-  tags                                     = merge(var.tags, try(each.value.tags, {}), local.mandatory_tags)
+  tags = merge(var.tags, try(each.value.tags, {}), local.mandatory_tags)
 }

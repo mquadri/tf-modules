@@ -1,8 +1,8 @@
 locals {
   mandatory_tags = {
-    app_id              = var.app_id
-    environment         = var.environment
-    msftmigration       = var.msftmigration
+    app_id        = var.app_id
+    environment   = var.environment
+    msftmigration = var.msftmigration
   }
 }
 
@@ -28,6 +28,6 @@ module "avm-res-desktopvirtualization-scalingplan" {
   virtual_desktop_scaling_plan_exclusion_tag = try(each.value.virtual_desktop_scaling_plan_exclusion_tag, null)
   virtual_desktop_scaling_plan_friendly_name = try(each.value.virtual_desktop_scaling_plan_friendly_name, null)
   virtual_desktop_scaling_plan_host_pool     = try(each.value.virtual_desktop_scaling_plan_host_pool, null) != null ? each.value.virtual_desktop_scaling_plan_host_pool : []
-  virtual_desktop_scaling_plan_tags          = merge(local.mandatory_tags, try(each.value.virtual_desktop_scaling_plan_tags,{}))
+  virtual_desktop_scaling_plan_tags          = merge(local.mandatory_tags, try(each.value.virtual_desktop_scaling_plan_tags, {}))
   virtual_desktop_scaling_plan_timeouts      = try(each.value.virtual_desktop_scaling_plan_timeouts, null)
 }

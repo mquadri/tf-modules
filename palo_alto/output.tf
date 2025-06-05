@@ -12,15 +12,15 @@ output "deployment_summary" {
         name                = fw.name
         resource_group_name = fw.resource_group_name
         location            = fw.location
-        }
+      }
     }
 
     routing_intents = {
       for intent_key, intent in azurerm_virtual_hub_routing_intent.routing_intent : intent_key => {
-        name     = intent.name
+        name = intent.name
         policies = [
           for policy in intent.routing_policy : {
-            policy_name  = policy.name
+            policy_name = policy.name
           }
         ]
       }

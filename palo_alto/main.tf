@@ -7,10 +7,10 @@ resource "azurerm_palo_alto_virtual_network_appliance" "appliance" {
 
 # Palo Alto Next Generation Firewall with Panorama
 resource "azurerm_palo_alto_next_generation_firewall_virtual_hub_panorama" "palo_fw" {
-  for_each             = var.firewall
-  name                 = each.value.name
-  resource_group_name  = each.value.resource_group_name
-  location             = each.value.region
+  for_each            = var.firewall
+  name                = each.value.name
+  resource_group_name = each.value.resource_group_name
+  location            = each.value.region
 
   network_profile {
     public_ip_address_ids        = [each.value.public_ip_id]
@@ -28,7 +28,7 @@ resource "azurerm_virtual_hub_routing_intent" "routing_intent" {
   virtual_hub_id = each.value.vhub_id
 
   dynamic "routing_policy" {
-    for_each = each.value.routing_policies  # List of routing policies in each routing intent variable
+    for_each = each.value.routing_policies # List of routing policies in each routing intent variable
     content {
       name         = routing_policy.value.policy_name
       next_hop     = azurerm_palo_alto_virtual_network_appliance.appliance[each.value.region].id

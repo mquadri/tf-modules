@@ -9,9 +9,9 @@ locals {
   }
   userIdentities = length(var.userIdentities) > 0 ? concat(var.userIdentities, try([module.user_managed_identity_setup.resource_id[0]], [])) : try([module.user_managed_identity_setup.resource_id[0]], [])
   mandatory_tags = {
-    environment         = var.environment
-    app_id              = var.app_id
-    msftmigration       = var.msftmigration    
+    environment   = var.environment
+    app_id        = var.app_id
+    msftmigration = var.msftmigration
   }
 }
 

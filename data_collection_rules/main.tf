@@ -4,9 +4,9 @@ data "azurerm_resource_group" "this" {
 
 locals {
   mandatory_tags = {
-    app_id              = var.app_id
-    environment         = var.environment
-    msftmigration       = var.msftmigration
+    app_id        = var.app_id
+    environment   = var.environment
+    msftmigration = var.msftmigration
   }
 }
 
@@ -18,7 +18,7 @@ resource "azurerm_monitor_data_collection_endpoint" "this" {
   kind                          = each.value.monitor_data_collection_endpoint_kind
   public_network_access_enabled = false
   description                   = each.value.monitor_data_collection_endpoint_description
-  tags                          = merge(local.mandatory_tags, try(var.tags,{}))
+  tags                          = merge(local.mandatory_tags, try(var.tags, {}))
 }
 
 resource "azurerm_monitor_data_collection_rule" "dcr" {
@@ -122,7 +122,7 @@ resource "azurerm_monitor_data_collection_rule" "dcr" {
       }
     }
   }
-  tags = merge(local.mandatory_tags, try(var.tags,{}))
+  tags = merge(local.mandatory_tags, try(var.tags, {}))
 }
 
 resource "azurerm_monitor_data_collection_rule_association" "dcrassoc1" {

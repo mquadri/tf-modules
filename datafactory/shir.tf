@@ -69,14 +69,14 @@ resource "random_password" "password" {
 }
 
 resource "azurerm_network_interface" "dynamic" {
-  count                          = var.total_machine_count
-  name                           = "nic-${local.naming}-${count.index + 1}"
-  location                       = var.location
-  resource_group_name            = var.resource_group_name
-  tags                           = local.tags
+  count               = var.total_machine_count
+  name                = "nic-${local.naming}-${count.index + 1}"
+  location            = var.location
+  resource_group_name = var.resource_group_name
+  tags                = local.tags
   /*accelerated_networking_enabled = var.accelerated_networking
   ip_forwarding_enabled          = false*/
-   
+
   ip_configuration {
     name                          = "internal"
     subnet_id                     = data.azurerm_subnet.subnet.id

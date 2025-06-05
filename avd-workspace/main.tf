@@ -34,13 +34,13 @@ module "avm-res-desktopvirtualization-workspace" {
   private_endpoints                                       = try(each.value.private_endpoints, {}) != null ? each.value.private_endpoints : {}
   role_assignments                                        = try(each.value.role_assignments, {}) != null ? each.value.role_assignments : {}
   subresource_names                                       = try(each.value.subresource_names, []) != null ? each.value.subresource_names : []
-  tags                                                    = merge(local.mandatory_tags, try(each.value.tags,{}))
+  tags                                                    = merge(local.mandatory_tags, try(each.value.tags, {}))
   tracing_tags_enabled                                    = try(each.value.tracing_tags_enabled, false) != null ? each.value.tracing_tags_enabled : false
   tracing_tags_prefix                                     = try(each.value.tracing_tags_prefix, "avm_") != null ? each.value.tracing_tags_prefix : "avm_"
   virtual_desktop_workspace_description                   = try(each.value.virtual_desktop_workspace_description, null)
   virtual_desktop_workspace_friendly_name                 = try(each.value.virtual_desktop_workspace_friendly_name, null)
   virtual_desktop_workspace_public_network_access_enabled = try(each.value.virtual_desktop_workspace_public_network_access_enabled, null)
-  virtual_desktop_workspace_tags                          = merge(local.mandatory_tags, try(each.value.virtual_desktop_workspace_tags,{}))
+  virtual_desktop_workspace_tags                          = merge(local.mandatory_tags, try(each.value.virtual_desktop_workspace_tags, {}))
   virtual_desktop_workspace_timeouts                      = try(each.value.virtual_desktop_workspace_timeouts, null)
 }
 

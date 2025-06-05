@@ -10,7 +10,7 @@
 
 locals {
   naming = "${var.resourcetype}${var.appname}${var.env}"
-  name = var.name != null ? var.name : "${local.naming}${var.additionalcontext}"
+  name   = var.name != null ? var.name : "${local.naming}${var.additionalcontext}"
   tags = {
     appid               = var.appid
     appname             = var.appname

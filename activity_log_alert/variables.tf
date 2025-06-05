@@ -1,6 +1,6 @@
 variable "activity_log_alert" {
   description = "A map of activity_log_alert configurations."
-  type        = map(object({
+  type = map(object({
     name                = string
     resource_group_name = string
     location            = string
@@ -11,25 +11,25 @@ variable "activity_log_alert" {
     tags                = optional(map(string), {})
 
     # Criteria Block
-    caller                 = optional(string, null)
-    operation_name         = optional(string, null)
-    resource_provider      = optional(string, null)
-    resource_providers     = optional(list(string), [])
-    resource_type          = optional(string, null)
-    resource_types         = optional(list(string), [])
-    resource_group         = optional(string, null)
-    resource_groups        = optional(list(string), [])
-    resource_id            = optional(string, null)
-    resource_ids           = optional(list(string), [])
-    level                  = optional(string, null)
-    levels                 = optional(list(string), [])
-    status                 = optional(string, null)
-    statuses               = optional(list(string), [])
-    sub_status             = optional(string, null)
-    sub_statuses           = optional(list(string), [])
-    recommendation_type    = optional(string, null)
+    caller                  = optional(string, null)
+    operation_name          = optional(string, null)
+    resource_provider       = optional(string, null)
+    resource_providers      = optional(list(string), [])
+    resource_type           = optional(string, null)
+    resource_types          = optional(list(string), [])
+    resource_group          = optional(string, null)
+    resource_groups         = optional(list(string), [])
+    resource_id             = optional(string, null)
+    resource_ids            = optional(list(string), [])
+    level                   = optional(string, null)
+    levels                  = optional(list(string), [])
+    status                  = optional(string, null)
+    statuses                = optional(list(string), [])
+    sub_status              = optional(string, null)
+    sub_statuses            = optional(list(string), [])
+    recommendation_type     = optional(string, null)
     recommendation_category = optional(string, null)
-    recommendation_impact  = optional(string, null)
+    recommendation_impact   = optional(string, null)
 
     # Resource Health Block
     current  = optional(list(string), [])
@@ -51,7 +51,7 @@ variable "alert_criteria" {
   description = "Mapping of valid criteria categories for activity log alerts."
   type        = map(string)
   default = {
-    administrative   = "Administrative"
+    administrative  = "Administrative"
     autoscale       = "Autoscale"
     policy          = "Policy"
     recommendation  = "Recommendation"
@@ -73,7 +73,7 @@ variable "environment" {
   type        = string
 
   validation {
-    condition     = contains(["PROD", "TEST", "DEV", "SANDBOX","NON-PROD"], var.environment)
+    condition     = contains(["PROD", "TEST", "DEV", "SANDBOX", "NON-PROD"], var.environment)
     error_message = "The environment must be one of the following values: PROD, TEST, DEV, SANDBOX, NON-PROD"
   }
 }

@@ -1,5 +1,5 @@
 module "cdn_frontdoor" {
-  source = "../"
+  source                              = "../"
   cdn_profile_name                    = var.cdn_profile_name
   resource_group_name                 = var.resource_group_name
   sku_name                            = var.sku_name

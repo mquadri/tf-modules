@@ -1,8 +1,8 @@
 locals {
   mandatory_tags = {
-    app_id              = var.app_id
-    environment         = var.environment
-    msftmigration       = var.msftmigration
+    app_id        = var.app_id
+    environment   = var.environment
+    msftmigration = var.msftmigration
   }
 }
 
@@ -26,6 +26,6 @@ module "avm-res-netapp-netappaccount" {
   role_assignments                  = each.value.role_assignments
   snapshot_policies                 = each.value.snapshot_policies
   subscription_id                   = each.value.subscription_id
-  tags                              = merge(local.mandatory_tags, try(each.value.tags,{}))
+  tags                              = merge(local.mandatory_tags, try(each.value.tags, {}))
   volumes                           = each.value.volumes
 }

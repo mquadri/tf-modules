@@ -5,9 +5,9 @@ data "azurerm_resource_group" "example" {
 
 locals {
   mandatory_tags = {
-    app_id              = var.app_id
-    environment         = var.environment
-    msftmigration       = var.msftmigration
+    app_id        = var.app_id
+    environment   = var.environment
+    msftmigration = var.msftmigration
   }
 }
 
@@ -26,5 +26,5 @@ resource "azurerm_application_insights_workbook" "azworkspace" {
       "Azure Monitor"
     ]
   })
-  tags = merge(local.mandatory_tags,try(var.tags,{}))
+  tags = merge(local.mandatory_tags, try(var.tags, {}))
 }

@@ -2,9 +2,9 @@ locals {
   naming = replace(replace("${var.resourcetype}${var.appname}${var.env}${var.location}-${var.additionalcontext}", " ", "-"), "[^a-zA-Z0-9-]", "")
 
   mandatory_tags = {
-    app_id              = var.app_id
-    environment         = var.environment
-    msftmigration       = var.msftmigration  
+    app_id        = var.app_id
+    environment   = var.environment
+    msftmigration = var.msftmigration
   }
 
   tags = {

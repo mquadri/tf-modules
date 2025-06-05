@@ -16,9 +16,9 @@ locals {
     costbaseline     = var.costbaseline #(year resource created)
     provisioned_by   = "Terraform"
     provisioned_date = timestamp()
-    app_id         = var.app_id
-    msftmigration  = var.msftmigration
-    environment    = var.environment
+    app_id           = var.app_id
+    msftmigration    = var.msftmigration
+    environment      = var.environment
   }
 }
 module "data_collection_rules" {

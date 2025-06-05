@@ -1,8 +1,8 @@
 locals {
   mandatory_tags = {
-    app_id              = var.app_id
-    environment         = var.environment
-    msftmigration       = var.msftmigration
+    app_id        = var.app_id
+    environment   = var.environment
+    msftmigration = var.msftmigration
   }
 }
 
@@ -26,7 +26,7 @@ module "express_route_circuit" {
   enable_telemetry                     = var.enable_telemetry # see variables.tf
   customer_managed_key                 = var.customer_managed_key
   diagnostic_settings                  = var.diagnostic_settings
-  tags                                 = merge(local.mandatory_tags, try(var.tags,{}))
+  tags                                 = merge(local.mandatory_tags, try(var.tags, {}))
   role_assignments                     = var.role_assignments
 }
 

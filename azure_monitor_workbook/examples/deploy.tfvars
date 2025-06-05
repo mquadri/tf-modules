@@ -9,10 +9,10 @@ costAppOwnerManager = "manager"
 costBudgetOwner     = "budget owner"
 # management_group_name                = "mg-name"
 # costDivision                         = "devision-name"
-appFunction             = "exmaple general dev Subscription"
-costbaseline            = "2024"
-costAllocation          = "sharedcost"
-monthlyBudget           = "1000"
+appFunction    = "exmaple general dev Subscription"
+costbaseline   = "2024"
+costAllocation = "sharedcost"
+monthlyBudget  = "1000"
 data_items = [
   {
     "type" = 1,

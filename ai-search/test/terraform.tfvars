@@ -6,20 +6,20 @@ mal_id        = "MALTEST002"
 
 # General custom tags for the ai-search module instance
 tags = {
-  TestID      = "aisearch-test-001"
-  Purpose     = "BasicIntegrationTest"
-  Automation  = "Terraform"
+  TestID     = "aisearch-test-001"
+  Purpose    = "BasicIntegrationTest"
+  Automation = "Terraform"
 }
 
 # Configuration for the search_service map
 search_service = {
   main_test_search_instance = {
-    name                = "lmn-aistest-dev-main-001" # Ensure this name is globally unique for Azure AI Search
+    name = "lmn-aistest-dev-main-001" # Ensure this name is globally unique for Azure AI Search
     # resource_group_name will be taken from the test/main.tf (azurerm_resource_group.test_rg.name)
     # location will be taken from the test/main.tf (azurerm_resource_group.test_rg.location)
-    sku                 = "free" # Using 'free' SKU for testing to avoid costs if possible
-    replica_count       = 1
-    partition_count     = 1
+    sku             = "free" # Using 'free' SKU for testing to avoid costs if possible
+    replica_count   = 1
+    partition_count = 1
     # tags for this specific search service instance (optional)
     tags = {
       ServiceSpecificTag = "TestInstanceAlpha"

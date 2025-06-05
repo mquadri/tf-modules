@@ -1,8 +1,8 @@
 locals {
   mandatory_tags = {
-    app_id              = var.app_id
-    environment         = var.environment
-    msftmigration       = var.msftmigration
+    app_id        = var.app_id
+    environment   = var.environment
+    msftmigration = var.msftmigration
   }
 }
 
@@ -21,5 +21,5 @@ module "avm-res-network-dnsresolver" {
   lock               = try(each.value.lock, null)
   outbound_endpoints = try(each.value.outbound_endpoints, null) != null ? each.value.outbound_endpoints : {}
   role_assignments   = try(each.value.role_assignments, null) != null ? each.value.role_assignments : {}
-  tags               = merge(local.mandatory_tags,try(each.value.tags, {}))
+  tags               = merge(local.mandatory_tags, try(each.value.tags, {}))
 }

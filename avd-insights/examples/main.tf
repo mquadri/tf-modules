@@ -2,9 +2,9 @@
 module "dcr" {
   source           = "../"
   avd_dcr_insights = var.avd_dcr_insights
-  app_id            = var.app_id
-  msftmigration     = var.msftmigration
-  environment       = var.environment  
+  app_id           = var.app_id
+  msftmigration    = var.msftmigration
+  environment      = var.environment
 }
 
 # Virtual Machine Extension for AMA agent

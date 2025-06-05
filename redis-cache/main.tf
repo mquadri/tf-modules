@@ -10,9 +10,9 @@ data "azurerm_subnet" "redis_subnet" {
 
 locals {
   mandatory_tags = {
-    app_id              = var.app_id
-    environment         = var.environment
-    msftmigration       = var.msftmigration
+    app_id        = var.app_id
+    environment   = var.environment
+    msftmigration = var.msftmigration
   }
 }
 
@@ -20,7 +20,7 @@ module "redis_cache" {
   for_each = var.redis_caches
 
   source  = "Azure/avm-res-cache-redis/azurerm"
-  version = "0.2.0" 
+  version = "0.2.0"
 
   # Mandatory Parameters
   resource_group_name = each.value.resource_group_name
@@ -53,7 +53,7 @@ module "redis_cache" {
   shard_count                             = each.value.shard_count
   sku_name                                = each.value.sku_name
   subnet_resource_id                      = var.redis_caches[each.key].subnet_name != null && var.redis_caches[each.key].subnet_name != "" ? data.azurerm_subnet.redis_subnet[each.key].id : null
-  tags                                    = merge(local.mandatory_tags, try(each.value.tags,{})) 
+  tags                                    = merge(local.mandatory_tags, try(each.value.tags, {}))
   tenant_settings                         = each.value.tenant_settings
   zones                                   = each.value.zones
 }

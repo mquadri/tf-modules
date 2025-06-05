@@ -32,9 +32,9 @@ firewall = {
 
 routing_intent = {
   "eastus" = {
-    name            = "routing-intent-eastus"
-    region          = "eastus"
-    vhub_id         = "/subscriptions/YOUR_SUBSCRIPTION_ID/resourceGroups/rg-eastus/providers/Microsoft.Network/virtualHubs/vhub-eastus"
+    name    = "routing-intent-eastus"
+    region  = "eastus"
+    vhub_id = "/subscriptions/YOUR_SUBSCRIPTION_ID/resourceGroups/rg-eastus/providers/Microsoft.Network/virtualHubs/vhub-eastus"
     routing_policies = [
       {
         policy_name  = "policy-eastus-1"
@@ -47,9 +47,9 @@ routing_intent = {
     ]
   },
   "westus" = {
-    name            = "routing-intent-westus"
-    region          = "westus"
-    vhub_id         = "/subscriptions/YOUR_SUBSCRIPTION_ID/resourceGroups/rg-westus/providers/Microsoft.Network/virtualHubs/vhub-westus"
+    name    = "routing-intent-westus"
+    region  = "westus"
+    vhub_id = "/subscriptions/YOUR_SUBSCRIPTION_ID/resourceGroups/rg-westus/providers/Microsoft.Network/virtualHubs/vhub-westus"
     routing_policies = [
       {
         policy_name  = "policy-westus-1"

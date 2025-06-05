@@ -15,7 +15,7 @@ module "example-bastion" {
   virtual_network        = var.virtual_network
   virtual_network_id     = var.virtual_network_id
   public_ip              = var.public_ip
-  app_id         = var.app_id
-  msftmigration  = var.msftmigration
-  environment    = var.environment
+  app_id                 = var.app_id
+  msftmigration          = var.msftmigration
+  environment            = var.environment
 }

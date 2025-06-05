@@ -10,9 +10,9 @@ data "azurerm_log_analytics_workspace" "this" {
 
 locals {
   mandatory_tags = {
-    app_id              = var.app_id
-    environment         = var.environment
-    msftmigration       = var.msftmigration
+    app_id        = var.app_id
+    environment   = var.environment
+    msftmigration = var.msftmigration
   }
 }
 
@@ -28,14 +28,14 @@ module "appinsight" {
   local_authentication_disabled = var.local_authentication_disabled
   internet_ingestion_enabled    = var.internet_ingestion_enabled
   internet_query_enabled        = var.internet_query_enabled
-  tags                          = merge(local.mandatory_tags, try(var.tags,{}))
+  tags                          = merge(local.mandatory_tags, try(var.tags, {}))
 }
 
 resource "azurerm_monitor_private_link_scope" "this" {
   for_each            = var.enable_private_link_scope == true ? { this = var.enable_private_link_scope } : {}
   name                = var.monitor_private_link_scope
   resource_group_name = data.azurerm_resource_group.this.name
-  tags                = merge(local.mandatory_tags, try(var.tags,{}))
+  tags                = merge(local.mandatory_tags, try(var.tags, {}))
 }
 
 resource "azurerm_monitor_private_link_scoped_service" "this" {

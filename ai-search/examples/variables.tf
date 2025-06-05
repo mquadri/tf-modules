@@ -93,7 +93,7 @@ variable "environment" {
   type        = string
 
   validation {
-    condition     = contains(["PROD", "TEST", "DEV", "SANDBOX","NON-PROD"], var.environment)
+    condition     = contains(["PROD", "TEST", "DEV", "SANDBOX", "NON-PROD"], var.environment)
     error_message = "The environment must be one of the following values: PROD, TEST, DEV, SANDBOX, NON-PROD"
   }
 }
@@ -112,7 +112,7 @@ variable "mal_id" {
 variable "tags" {
   description = "A map of additional custom tags to apply at the module level (passed to the ai-search module's general tags input)."
   type        = map(string)
-  default     = {
+  default = {
     ExampleCustomTag = "ExampleValue"
   }
 }

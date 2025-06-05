@@ -1,9 +1,12 @@
 #!/bin/bash
 # Terraform Module Quality Check Script (Docker bash version)
-# This script runs formatting, linting, and documentation generation for Terraform modules
+# Aligned with Azure Terraform Module Catalog Criterion v2.0
+# This script runs formatting, linting, Azure compliance checks, and optional documentation generation
 # 
 # Usage: 
 #   ./run-terraform-checks.sh <path-to-module>
+# Environment Variables:
+#   GENERATE_DOCS: Set to "true" to enable terraform-docs generation (default: false)
 
 # Check if a module path was provided
 if [ "$#" -ne 1 ]; then
@@ -21,7 +24,9 @@ if [ ! -d "$MODULE_PATH" ]; then
     exit 1
 fi
 
-echo "Running quality checks on Terraform module at: $MODULE_PATH"
+echo "🔍 Running Azure Terraform Module Catalog quality checks on: $MODULE_PATH"
+echo "📋 Azure compliance checks aligned with Lumen enterprise standards"
+echo ""
 
 # Step 1: Run terraform fmt
 echo -e "\nStep 1: Running terraform fmt..."
@@ -41,42 +46,129 @@ else
     echo "tflint completed successfully with no issues."
 fi
 
-# Step 3: Run terraform-docs
-echo -e "\nStep 3: Running terraform-docs..."
-# Create a temporary directory with proper permissions inside the container
-mkdir -p /tmp/terraform-docs-output
-chmod 777 /tmp/terraform-docs-output
+# Step 3: Conditional terraform-docs generation
+echo -e "\n📝 Step 3: Documentation Generation"
+if [ "$GENERATE_DOCS" = "true" ]; then
+    echo "✅ Running terraform-docs (documentation generation enabled)..."
+    
+    # Create a temporary directory with proper permissions inside the container
+    mkdir -p /tmp/terraform-docs-output
+    chmod 777 /tmp/terraform-docs-output
 
-if ! terraform-docs markdown table . > /tmp/terraform-docs-output/README_GENERATED.md; then
-    echo "Warning: terraform-docs had issues."
-else
-    echo "terraform-docs completed successfully."
-    
-    # First try to write directly to the output mount
-    if [ -d "/output" ] && [ -w "/output" ]; then
-        echo "Writing to /output directory..."
-        cp /tmp/terraform-docs-output/README_GENERATED.md /output/README_GENERATED.md
-        chmod 666 /output/README_GENERATED.md
-        echo "Documentation generated to: /output/README_GENERATED.md"
-    fi
-    
-    # Also try writing to workspace (this might fail due to permissions)
-    echo "Attempting to write to workspace directory..."
-    if cp /tmp/terraform-docs-output/README_GENERATED.md ./README_GENERATED.md 2>/dev/null; then
-        chmod 666 ./README_GENERATED.md 2>/dev/null
-        echo "Documentation also generated to: ./README_GENERATED.md"
+    if ! terraform-docs markdown table . > /tmp/terraform-docs-output/README_GENERATED.md; then
+        echo "⚠️  Warning: terraform-docs had issues."
     else
-        echo "Note: Could not write README_GENERATED.md to workspace directory due to permissions."
+        echo "✅ terraform-docs completed successfully."
+        
+        # First try to write directly to the output mount
+        if [ -d "/output" ] && [ -w "/output" ]; then
+            echo "📁 Writing documentation to /output directory..."
+            cp /tmp/terraform-docs-output/README_GENERATED.md /output/README_GENERATED.md
+            chmod 666 /output/README_GENERATED.md
+            echo "✅ Documentation generated: /output/README_GENERATED.md"
+        fi
+        
+        # Also try writing to workspace (this might fail due to permissions)
+        echo "📁 Attempting to write to workspace directory..."
+        if cp /tmp/terraform-docs-output/README_GENERATED.md ./README_GENERATED.md 2>/dev/null; then
+            chmod 666 ./README_GENERATED.md 2>/dev/null
+            echo "✅ Documentation also generated: ./README_GENERATED.md"
+        else
+            echo "ℹ️  Note: Could not write README_GENERATED.md to workspace directory due to permissions."
+        fi
+        
+        # Check if at least one of the files was created successfully
+        if [ ! -f "/output/README_GENERATED.md" ] && [ ! -f "./README_GENERATED.md" ]; then
+            echo "⚠️  Warning: README_GENERATED.md file was not created in either location."
+        fi
     fi
-    
-    # Check if at least one of the files was created successfully
-    if [ ! -f "/output/README_GENERATED.md" ] && [ ! -f "./README_GENERATED.md" ]; then
-        echo "Warning: README_GENERATED.md file was not created in either location. Check for errors in terraform-docs execution."
-    fi
+else
+    echo "⏭️  Documentation generation disabled (GENERATE_DOCS != 'true')"
+    echo "💡 Tip: Use -GenerateDocumentation parameter to enable README creation"
 fi
 
-# Step 4: Validate module structure
-echo -e "\nStep 4: Validating module structure..."
+# Step 4: Azure Terraform Module Catalog Criterion Compliance Check
+echo -e "\n🔧 Step 4: Azure Terraform Module Catalog Criterion Compliance Check"
+echo "📋 Checking compliance with Lumen Azure Terraform Module standards..."
+
+# Initialize compliance tracking
+total_checks=0
+passed_checks=0
+
+# Function to check compliance item
+check_compliance() {
+    local check_name="$1"
+    local condition="$2"
+    local file_path="$3"
+    local pattern="$4"
+    
+    total_checks=$((total_checks + 1))
+    echo -n "   Checking $check_name... "
+    
+    if [ "$condition" = "file_exists" ]; then
+        if [ -f "$file_path" ]; then
+            echo "✅ PASS"
+            passed_checks=$((passed_checks + 1))
+        else
+            echo "❌ FAIL (file missing: $file_path)"
+        fi
+    elif [ "$condition" = "dir_exists" ]; then
+        if [ -d "$file_path" ]; then
+            echo "✅ PASS"
+            passed_checks=$((passed_checks + 1))
+        else
+            echo "❌ FAIL (directory missing: $file_path)"
+        fi
+    elif [ "$condition" = "pattern_in_file" ]; then
+        if [ -f "$file_path" ] && grep -q "$pattern" "$file_path"; then
+            echo "✅ PASS"
+            passed_checks=$((passed_checks + 1))
+        else
+            echo "❌ FAIL (pattern '$pattern' not found in $file_path)"
+        fi
+    fi
+}
+
+# Core module structure requirements
+check_compliance "Essential file: main.tf" "file_exists" "main.tf"
+check_compliance "Essential file: variables.tf" "file_exists" "variables.tf"
+check_compliance "Essential file: outputs.tf" "file_exists" "outputs.tf"
+check_compliance "Essential file: README.md" "file_exists" "README.md"
+
+# Azure Terraform Module Catalog specific requirements
+check_compliance "Provider requirements (versions.tf)" "file_exists" "versions.tf"
+check_compliance "Required providers block" "pattern_in_file" "versions.tf" "required_providers"
+check_compliance "Terraform version constraint" "pattern_in_file" "versions.tf" "required_version"
+check_compliance "Variable descriptions" "pattern_in_file" "variables.tf" "description"
+check_compliance "Output descriptions" "pattern_in_file" "outputs.tf" "description"
+check_compliance "Examples directory" "dir_exists" "examples"
+check_compliance "Test directory" "dir_exists" "test"
+check_compliance "README usage section" "pattern_in_file" "README.md" "## Usage\|## Example\|## Examples"
+
+# Additional Azure-specific checks
+check_compliance "Variable validation blocks" "pattern_in_file" "variables.tf" "validation"
+check_compliance "Resource tagging references" "pattern_in_file" "main.tf" "tags\|tag"
+
+# Calculate compliance percentage
+compliance_percentage=$((passed_checks * 100 / total_checks))
+
+echo ""
+echo "📊 Azure Terraform Module Catalog Criterion Compliance Report:"
+echo "   Total Checks: $total_checks"
+echo "   Passed: $passed_checks"
+echo "   Failed: $((total_checks - passed_checks))"
+echo "   Compliance Score: $compliance_percentage%"
+
+if [ $compliance_percentage -ge 80 ]; then
+    echo "   Status: ✅ COMPLIANT (≥80%)"
+elif [ $compliance_percentage -ge 60 ]; then
+    echo "   Status: ⚠️  PARTIALLY COMPLIANT (60-79%)"
+else
+    echo "   Status: ❌ NON-COMPLIANT (<60%)"
+fi
+
+# Step 5: Validate module structure
+echo -e "\nStep 5: Validating module structure..."
 
 # Define expected files for a standard Terraform module
 expected_files=("main.tf" "variables.tf" "outputs.tf" "README.md")

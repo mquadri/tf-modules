@@ -9,9 +9,9 @@ data "azurerm_virtual_desktop_host_pool" "this" {
 
 locals {
   mandatory_tags = {
-    app_id              = var.app_id
-    environment         = var.environment
-    msftmigration       = var.msftmigration
+    app_id        = var.app_id
+    environment   = var.environment
+    msftmigration = var.msftmigration
   }
 }
 
@@ -37,6 +37,6 @@ module "avm-res-desktopvirtualization-applicationgroup" {
   tracing_tags_enabled                                           = try(each.value.tracing_tags_enabled, null) != null ? each.value.tracing_tags_enabled : false
   tracing_tags_prefix                                            = try(each.value.tracing_tags_prefix, "avm_") != null ? each.value.tracing_tags_prefix : "avm_"
   virtual_desktop_application_group_friendly_name                = try(each.value.virtual_desktop_application_group_friendly_name, null)
-  virtual_desktop_application_group_tags                         = merge(local.mandatory_tags, try(each.value.virtual_desktop_application_group_tags,{}))
+  virtual_desktop_application_group_tags                         = merge(local.mandatory_tags, try(each.value.virtual_desktop_application_group_tags, {}))
   virtual_desktop_application_group_timeouts                     = try(each.value.virtual_desktop_application_group_timeouts, null)
 }

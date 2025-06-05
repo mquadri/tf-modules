@@ -22,9 +22,9 @@ variable "firewall" {
 variable "routing_intent" {
   description = "Map of routing intents with associated routing policies for each virtual hub"
   type = map(object({
-    name            = string
-    vhub_id         = string
-    region          = string
+    name    = string
+    vhub_id = string
+    region  = string
     routing_policies = list(object({
       policy_name  = string
       destinations = list(string)

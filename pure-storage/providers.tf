@@ -1,12 +1,12 @@
 terraform {
   required_providers {
     cbs = {
-      source  = "PureStorage-OpenConnect/cbs"
+      source = "PureStorage-OpenConnect/cbs"
       #version = "~> 0.11."
-      version  = "0.11.1"
+      version = "0.11.1"
     }
     azurerm = {
-      source = "hashicorp/azurerm"
+      source  = "hashicorp/azurerm"
       version = ">= 3.7.0, < 5.0.0"
     }
     random = {
@@ -14,7 +14,7 @@ terraform {
       version = ">= 3.5.0, < 4.0.0"
     }
     tls = {
-      source = "hashicorp/tls"
+      source  = "hashicorp/tls"
       version = "4.0.6"
     }
   }

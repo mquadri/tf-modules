@@ -7,9 +7,9 @@ data "azurerm_subnet" "this" {
 
 locals {
   mandatory_tags = {
-    app_id              = var.app_id
-    environment         = var.environment
-    msftmigration       = var.msftmigration
+    app_id        = var.app_id
+    environment   = var.environment
+    msftmigration = var.msftmigration
   }
 }
 
@@ -25,5 +25,5 @@ module "avm-res-network-routetable" {
   role_assignments              = var.role_assignments
   routes                        = var.routes
   subnet_resource_ids           = try(data.azurerm_subnet.this["subnet"].id, null) != null ? data.azurerm_subnet.this["subnet"].id : var.subnet_resource_ids
-  tags                          = merge(local.mandatory_tags,try(var.tags,{}))
+  tags                          = merge(local.mandatory_tags, try(var.tags, {}))
 }

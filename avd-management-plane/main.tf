@@ -1,8 +1,8 @@
 locals {
   mandatory_tags = {
-    app_id              = var.app_id
-    environment         = var.environment
-    msftmigration       = var.msftmigration
+    app_id        = var.app_id
+    environment   = var.environment
+    msftmigration = var.msftmigration
   }
 }
 
@@ -46,18 +46,18 @@ module "avm-ptn-avd-lza-managementplane" {
   virtual_desktop_host_pool_preferred_app_group_type             = each.value.virtual_desktop_host_pool_preferred_app_group_type
   virtual_desktop_host_pool_scheduled_agent_updates              = each.value.virtual_desktop_host_pool_scheduled_agent_updates
   virtual_desktop_host_pool_start_vm_on_connect                  = each.value.virtual_desktop_host_pool_start_vm_on_connect
-  virtual_desktop_host_pool_tags                                 = merge(local.mandatory_tags, try(each.value.virtual_desktop_host_pool_tags,{}))
+  virtual_desktop_host_pool_tags                                 = merge(local.mandatory_tags, try(each.value.virtual_desktop_host_pool_tags, {}))
   virtual_desktop_host_pool_timeouts                             = each.value.virtual_desktop_host_pool_timeouts
   virtual_desktop_host_pool_validate_environment                 = each.value.virtual_desktop_host_pool_validate_environment
   virtual_desktop_scaling_plan_description                       = each.value.virtual_desktop_scaling_plan_description
   virtual_desktop_scaling_plan_exclusion_tag                     = each.value.virtual_desktop_scaling_plan_exclusion_tag
   virtual_desktop_scaling_plan_friendly_name                     = each.value.virtual_desktop_scaling_plan_friendly_name
   virtual_desktop_scaling_plan_host_pool                         = each.value.virtual_desktop_scaling_plan_host_pool
-  virtual_desktop_scaling_plan_tags                              = merge(local.mandatory_tags, try(each.value.virtual_desktop_scaling_plan_tags,{}))
+  virtual_desktop_scaling_plan_tags                              = merge(local.mandatory_tags, try(each.value.virtual_desktop_scaling_plan_tags, {}))
   virtual_desktop_scaling_plan_timeouts                          = each.value.virtual_desktop_scaling_plan_timeouts
   virtual_desktop_workspace_description                          = each.value.virtual_desktop_workspace_description
   virtual_desktop_workspace_friendly_name                        = each.value.virtual_desktop_workspace_friendly_name
   virtual_desktop_workspace_public_network_access_enabled        = each.value.virtual_desktop_workspace_public_network_access_enabled
-  virtual_desktop_workspace_tags                                 = merge(local.mandatory_tags, try(each.value.virtual_desktop_workspace_tags,{}))
+  virtual_desktop_workspace_tags                                 = merge(local.mandatory_tags, try(each.value.virtual_desktop_workspace_tags, {}))
   virtual_desktop_workspace_timeouts                             = each.value.virtual_desktop_workspace_timeouts
 }

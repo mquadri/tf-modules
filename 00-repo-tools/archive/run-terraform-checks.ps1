@@ -30,17 +30,16 @@ function Test-AzureModuleCriterion {
         [string]$Distribution
     )
     
-    Write-Host "`nChecking Azure Terraform Module Catalog Criterion compliance..." -ForegroundColor Yellow
-      # Define criterion requirements
+    Write-Host "`nChecking Azure Terraform Module Catalog Criterion compliance..." -ForegroundColor Yellow    # Define criterion requirements
     $requirements = @(
-        @{Name="Provider Configuration"; File="required_providers.tf|versions.tf|main.tf"; Pattern="required_providers|provider \"azurerm\""}
-        @{Name="Module Versioning"; File="README.md"; Pattern="## Requirements|required_version"}
-        @{Name="Variable Validation"; File="variables.tf"; Pattern="validation \{"}
-        @{Name="Variable Descriptions"; File="variables.tf"; Pattern="description ="}
-        @{Name="Output Descriptions"; File="outputs.tf"; Pattern="description ="}
+        @{Name="Provider Configuration"; File="required_providers.tf|versions.tf|main.tf"; Pattern='required_providers|provider "azurerm"'}
+        @{Name="Module Versioning"; File="README.md"; Pattern='## Requirements|required_version'}
+        @{Name="Variable Validation"; File="variables.tf"; Pattern='validation \{'}
+        @{Name="Variable Descriptions"; File="variables.tf"; Pattern='description ='}
+        @{Name="Output Descriptions"; File="outputs.tf"; Pattern='description ='}
         @{Name="Examples Directory"; File="examples/"; Pattern=""}
         @{Name="Test Files"; File="test/"; Pattern=""}
-        @{Name="Readme Documentation"; File="README.md"; Pattern="## Usage|## Inputs|## Outputs"}
+        @{Name="Readme Documentation"; File="README.md"; Pattern='## Usage|## Inputs|## Outputs'}
         @{Name="Architectural Diagram"; File="diagram/"; Pattern=""}
     )
     
@@ -172,21 +171,35 @@ Write-Host "Using WSL distribution: $ubuntuDistro" -ForegroundColor Cyan
 # Convert Windows path to WSL path with improved error handling
 try {
     Write-Host "Converting Windows path '$ModulePath' to WSL path..." -ForegroundColor Cyan
+      # Ensure the distribution name is properly quoted and has no surrounding spaces
+    $cleanDistro = $ubuntuDistro.Trim()
+    Write-Host "Using WSL distribution: '$cleanDistro'" -ForegroundColor Cyan
     
-    # Use the full --distribution parameter to avoid issues with special characters
-    $wslPath = wsl.exe --distribution "$ubuntuDistro" --exec bash -c "wslpath '$ModulePath'" 2>&1
+    # Use the full --distribution parameter with proper quoting
+    $wslPathCmd = "wsl.exe --distribution `"$cleanDistro`" --exec bash -c `"wslpath '$ModulePath'`" 2>&1"
+    Write-Host "Running command: $wslPathCmd" -ForegroundColor Gray
+    $wslPath = Invoke-Expression $wslPathCmd
     
     if ($LASTEXITCODE -ne 0 -or $wslPath -match "Error" -or $wslPath -eq "") {
         Write-Host "Error: Failed to convert Windows path to WSL path. Output: $wslPath" -ForegroundColor Red
         
-        # Try an alternative approach for path conversion
+        # Try an alternative approach for path conversion - using direct manual conversion
         Write-Host "Attempting alternative path conversion..." -ForegroundColor Yellow
-        $normalizedPath = $ModulePath.Replace('\', '/')
-        $wslPath = wsl.exe --distribution "$ubuntuDistro" --exec bash -c "echo '$normalizedPath'" 2>&1
         
-        if ($LASTEXITCODE -ne 0 -or $wslPath -eq "") {
-            Write-Host "Error: Alternative path conversion also failed." -ForegroundColor Red
-            exit 1
+        # Manual conversion of Windows path to WSL path
+        if ($ModulePath -match "^([A-Za-z]):(.*)$") {
+            $driveLetter = $Matches[1].ToLower()
+            $restOfPath = $Matches[2].Replace('\', '/')
+            $wslPath = "/mnt/$driveLetter$restOfPath"
+            Write-Host "Manually converted path: $wslPath" -ForegroundColor Yellow        } else {
+            # If that fails, try simple replacement
+            $normalizedPath = $ModulePath.Replace('\', '/')
+            $wslPath = wsl.exe --exec bash -c "echo '$normalizedPath'" 2>&1
+            
+            if ($LASTEXITCODE -ne 0 -or $wslPath -eq "") {
+                Write-Host "Error: Alternative path conversion also failed." -ForegroundColor Red
+                exit 1
+            }
         }
         
         Write-Host "Alternative path conversion successful: $wslPath" -ForegroundColor Green
@@ -301,10 +314,13 @@ try {
         Write-Host "terraform-docs completed successfully." -ForegroundColor Green
         Write-Host "Documentation generated to: README_GENERATED.md" -ForegroundColor Cyan
         
-        # Check if the file was actually created
-        $fileCheck = wsl.exe --distribution "$ubuntuDistro" --exec bash -c "test -f '$wslPath/README_GENERATED.md' && echo 'exists' || echo 'missing'"
+        # Check if the file was actually created        $fileCheck = wsl.exe --distribution "$ubuntuDistro" --exec bash -c "test -f '$wslPath/README_GENERATED.md' && echo 'exists' || echo 'missing'"
         if ($fileCheck -eq "missing") {
             Write-Host "Warning: README_GENERATED.md file was not created. Check for errors in terraform-docs execution." -ForegroundColor Yellow
+        } else {
+            # Fix permissions for the generated file
+            wsl.exe --distribution "$ubuntuDistro" --exec bash -c "chmod 664 '$wslPath/README_GENERATED.md'"
+            Write-Host "Set read/write permissions on README_GENERATED.md file." -ForegroundColor Cyan
         }
     }
 } catch {

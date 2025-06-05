@@ -1,4 +1,4 @@
-resourcetype    = "sub"
+resourcetype   = "sub"
 appid          = "test"
 appname        = "infra"
 env            = "dev"
@@ -14,11 +14,11 @@ costbaseline   = "2024"
 costAllocation = "sharedcost"
 monthlyBudget  = "1000"
 
-expressroute_resource_group_name   = "express-route-rg"
-service_provider_name = "Equinix"
-peering_location      = "Seattle"
-bandwidth_in_mbps     = 50
-location              = "WestUS2"
+expressroute_resource_group_name = "express-route-rg"
+service_provider_name            = "Equinix"
+peering_location                 = "Seattle"
+bandwidth_in_mbps                = 50
+location                         = "WestUS2"
 sku = {
   tier   = "Standard"
   family = "MeteredData"
@@ -39,14 +39,14 @@ express_route_circuit_authorizations = {
   }
 }
 diagnostic_settings = {
-diag1 = {
-  name                       = "test-diag123"
-  logs_destinations_ids      = ["test"]
-  workspace_resource_id      = "test"
-  enable_diagnostic_setting  = true
-  log_category_groups        = ["allLogs"]
-  metric_categories          = ["AllMetrics"]
-  additionalcontext          = "test"
-}
+  diag1 = {
+    name                      = "test-diag123"
+    logs_destinations_ids     = ["test"]
+    workspace_resource_id     = "test"
+    enable_diagnostic_setting = true
+    log_category_groups       = ["allLogs"]
+    metric_categories         = ["AllMetrics"]
+    additionalcontext         = "test"
+  }
 }
 enable_telemetry = true

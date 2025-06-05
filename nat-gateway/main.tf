@@ -1,8 +1,8 @@
 locals {
   mandatory_tags = {
-    app_id              = var.app_id
-    environment         = var.environment
-    msftmigration       = var.msftmigration
+    app_id        = var.app_id
+    environment   = var.environment
+    msftmigration = var.msftmigration
   }
 }
 
@@ -27,7 +27,7 @@ module "avm-res-network-natgateway" {
   role_assignments        = each.value.role_assignments
   sku_name                = each.value.sku_name
   subnet_associations     = each.value.subnet_associations
-  tags                    = merge(local.mandatory_tags, try(each.value.tags,{}))
+  tags                    = merge(local.mandatory_tags, try(each.value.tags, {}))
   timeouts                = each.value.timeouts
   zones                   = each.value.zones
 }

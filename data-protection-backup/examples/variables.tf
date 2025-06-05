@@ -1,10 +1,10 @@
 variable "backup_vault_config" {
   type = object({
-    vault_name = string
-    resource_group_name = string
-    location = string
-    redundancy = string
-    datastore_type = string
+    vault_name            = string
+    resource_group_name   = string
+    location              = string
+    redundancy            = string
+    datastore_type        = string
     managed_identity_type = string # Only expects "SystemAssigned as of now"
     #cross_region_restore_enabled = optional(bool)
     tags = optional(map(string), {})
@@ -13,16 +13,16 @@ variable "backup_vault_config" {
 
 variable "vault_policies" {
   type = map(object({
-    backup_policy_name = string
+    backup_policy_name                     = string
     operational_default_retention_duration = optional(string)
-    vault_default_retention_duration = optional(string)
+    vault_default_retention_duration       = optional(string)
     default_backup_repeating_time_interval = optional(string)
     retention_rules = optional(list(object({
-       name = string
-       absolute_criteria = string
-       priority = number
-       duration = string
-       datastore_type = string
+      name              = string
+      absolute_criteria = string
+      priority          = number
+      duration          = string
+      datastore_type    = string
     })))
   }))
 }
@@ -38,7 +38,7 @@ variable "environment" {
   type        = string
 
   validation {
-    condition     = contains(["PROD", "TEST", "DEV", "SANDBOX","NON-PROD"], var.environment)
+    condition     = contains(["PROD", "TEST", "DEV", "SANDBOX", "NON-PROD"], var.environment)
     error_message = "The environment must be one of the following values: PROD, TEST, DEV, SANDBOX, NON-PROD"
   }
 }
