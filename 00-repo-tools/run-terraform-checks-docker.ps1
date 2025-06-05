@@ -1,367 +1,600 @@
-# Terraform Module Quality Check Script (Docker Version)
-# This script runs formatting, linting, and documentation generation for Terraform modules using Docker
-# 
-# Usage: 
-#   .\run-terraform-checks-docker.ps1 -ModulePath <path-to-module>
-#
-# Parameters:
-#   -ModulePath         : (Required) Path to the Terraform module to check
-#   -AzureModuleCheck   : (Optional) Check if module follows Azure Terraform Module Catalog Criterion
-#   -SkipValidation     : (Optional) Skip the module structure validation checks
-#   -DockerImage        : (Optional) Docker image to use (default: hashicorp/terraform:latest)
+<#
+.SYNOPSIS
+    Enhanced Docker-based Terraform module quality checker with comprehensive validation and terraform-docs integration.
 
+.DESCRIPTION
+    This script builds a Docker image containing Terraform, tflint, and terraform-docs,
+    then runs comprehensive quality checks on Terraform modules in an isolated environment.
+    
+    The script performs the following operations:
+    • 🛠️  Builds or uses existing Docker image with all required tools
+    • 📋 Validates Terraform syntax and formatting
+    • 🔍 Runs linting checks with tflint
+    • 📝 Conditionally generates documentation with terraform-docs (OFF by default)
+    • 🔧 Validates Azure Terraform Module Catalog Criterion compliance
+    • ✅ Provides comprehensive completion summary
+
+.PARAMETER ModulePath
+    Specifies the path to the Terraform module directory to check.
+    This parameter is mandatory and must point to a valid directory containing Terraform files.
+
+.PARAMETER GenerateDocumentation
+    Controls whether terraform-docs should generate README documentation.
+    When specified, creates or updates README_GENERATED.md in the module directory.
+    When omitted, documentation generation is skipped for faster execution.
+    DEFAULT: OFF - Documentation generation is disabled by default for performance.
+
+.PARAMETER RebuildImage
+    Forces rebuilding of the Docker image even if it already exists.
+    Use this when you want to ensure the latest tools and dependencies are included.
+
+.PARAMETER ImageName
+    Specifies the name for the Docker image. Defaults to "terraform-quality-checks".
+    Useful for managing multiple versions or custom configurations.
+
+.PARAMETER AzureModuleCheck
+    Enables enhanced Azure Terraform Module Catalog Criterion compliance checking.
+    When specified, performs additional validation against Azure module standards.
+
+.PARAMETER SkipValidation
+    Skips the basic module structure validation checks.
+    Use this to focus only on formatting and linting without structure validation.
+
+.PARAMETER Help
+    Displays comprehensive help information including usage examples, features,
+    troubleshooting guide, and Docker requirements.
+
+.EXAMPLE
+    .\run-terraform-checks-docker.ps1 -ModulePath "./modules/storage-account"
+    
+    Runs quality checks on the storage-account module without generating documentation.
+
+.EXAMPLE
+    .\run-terraform-checks-docker.ps1 -ModulePath "./modules/app-service" -GenerateDocumentation
+    
+    Runs quality checks and generates README documentation for the app-service module.
+
+.EXAMPLE
+    .\run-terraform-checks-docker.ps1 -ModulePath "./modules/network" -RebuildImage -GenerateDocumentation -AzureModuleCheck
+    
+    Rebuilds the Docker image and runs full checks with documentation generation and Azure compliance validation.
+
+.EXAMPLE
+    .\run-terraform-checks-docker.ps1 -Help
+    
+    Displays comprehensive help information with visual formatting and examples.
+
+.NOTES
+    Author: Terraform Quality Assurance Team
+    Version: 2.1.0
+    Requires: Docker Desktop or Docker Engine
+    
+    Docker Requirements:
+    - Docker must be installed and running
+    - Sufficient disk space for Docker image (~500MB)
+    - Network access for downloading base images and tools
+    
+    Supported Platforms:
+    - Windows PowerShell 5.1+
+    - PowerShell Core 7.0+
+    - Cross-platform Docker environments
+
+.LINK
+    https://developer.hashicorp.com/terraform/language/syntax/configuration
+    https://github.com/terraform-linters/tflint
+    https://terraform-docs.io/
+#>
+
+[CmdletBinding(DefaultParameterSetName='Run')]
 param (
-    [Parameter(Mandatory=$true)]
+    [Parameter(Mandatory=$true, ParameterSetName='Run', Position=0)]
+    [ValidateScript({
+        if (-not (Test-Path $_ -PathType Container)) {
+            throw "The specified module path '$_' does not exist or is not a directory."
+        }
+        $true
+    })]
     [string]$ModulePath,
     
-    [Parameter(Mandatory=$false)]
+    [Parameter(Mandatory=$false, ParameterSetName='Run')]
+    [switch]$GenerateDocumentation,
+    
+    [Parameter(Mandatory=$false, ParameterSetName='Run')]
+    [switch]$RebuildImage,
+    
+    [Parameter(Mandatory=$false, ParameterSetName='Run')]
+    [ValidatePattern('^[a-zA-Z0-9][a-zA-Z0-9_.-]*$')]
+    [string]$ImageName = "terraform-quality-checks",
+    
+    [Parameter(Mandatory=$false, ParameterSetName='Run')]
     [switch]$AzureModuleCheck,
     
-    [Parameter(Mandatory=$false)]
+    [Parameter(Mandatory=$false, ParameterSetName='Run')]
     [switch]$SkipValidation,
     
-    [Parameter(Mandatory=$false)]
-    [string]$DockerImage = "hashicorp/terraform:latest"
+    [Parameter(Mandatory=$false, ParameterSetName='Help')]
+    [switch]$Help
 )
 
-Write-Host "Running quality checks on Terraform module at: $ModulePath" -ForegroundColor Green
+# Set error action preference for better error handling
+$ErrorActionPreference = "Stop"
+
+# Initialize script variables
+$ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+$DockerfilePath = Join-Path $ScriptDir "Dockerfile"
+$checkResults = @{
+    TerraformFmt = $null
+    TfLint = $null
+    TerraformDocs = $null
+    ModuleStructure = $null
+    AzureCompliance = $null
+}
+
+# Function to display visual help information
+function Show-DockerChecksHelp {
+    Write-Host ""
+    Write-Host "╔══════════════════════════════════════════════════════════════════════════════╗" -ForegroundColor Blue
+    Write-Host "║                    🐳 DOCKER TERRAFORM QUALITY CHECKS 🐳                    ║" -ForegroundColor Blue
+    Write-Host "║                         Enhanced Module Validation                          ║" -ForegroundColor Blue
+    Write-Host "╚══════════════════════════════════════════════════════════════════════════════╝" -ForegroundColor Blue
+    Write-Host ""
+    
+    Write-Host "📋 OVERVIEW" -ForegroundColor Green
+    Write-Host "   This script runs comprehensive Terraform module quality checks using Docker." -ForegroundColor White
+    Write-Host "   All tools are containerized for consistent, isolated execution." -ForegroundColor White
+    Write-Host ""
+    
+    Write-Host "🔧 FEATURES" -ForegroundColor Green
+    Write-Host "   • Terraform syntax validation and formatting" -ForegroundColor White
+    Write-Host "   • Advanced linting with tflint" -ForegroundColor White
+    Write-Host "   • Optional documentation generation with terraform-docs" -ForegroundColor White
+    Write-Host "   • Azure Terraform Module Catalog Criterion compliance checking" -ForegroundColor White
+    Write-Host "   • Comprehensive module structure validation" -ForegroundColor White
+    Write-Host "   • Isolated Docker environment for consistent results" -ForegroundColor White
+    Write-Host ""
+    
+    Write-Host "📝 BASIC USAGE" -ForegroundColor Green
+    Write-Host "   .\run-terraform-checks-docker.ps1 -ModulePath `"./my-module`"" -ForegroundColor Cyan
+    Write-Host ""
+    
+    Write-Host "🎛️  PARAMETERS" -ForegroundColor Green
+    Write-Host "   -ModulePath          Path to Terraform module directory (Required)" -ForegroundColor White
+    Write-Host "   -GenerateDocumentation Generate README with terraform-docs (Default: OFF)" -ForegroundColor Yellow
+    Write-Host "   -RebuildImage        Force Docker image rebuild" -ForegroundColor White
+    Write-Host "   -ImageName           Custom Docker image name (Default: terraform-quality-checks)" -ForegroundColor White
+    Write-Host "   -AzureModuleCheck    Enable Azure compliance validation" -ForegroundColor White
+    Write-Host "   -SkipValidation      Skip module structure validation" -ForegroundColor White
+    Write-Host "   -Help                Show this help information" -ForegroundColor White
+    Write-Host ""
+    
+    Write-Host "📚 EXAMPLES" -ForegroundColor Green
+    Write-Host "   # Basic quality checks (no documentation)" -ForegroundColor Gray
+    Write-Host "   .\run-terraform-checks-docker.ps1 -ModulePath `"./modules/storage`"" -ForegroundColor Cyan
+    Write-Host ""
+    Write-Host "   # Full validation with documentation and Azure compliance" -ForegroundColor Gray
+    Write-Host "   .\run-terraform-checks-docker.ps1 -ModulePath `"./modules/app-service`" -GenerateDocumentation -AzureModuleCheck" -ForegroundColor Cyan
+    Write-Host ""
+    Write-Host "   # Force rebuild image and run comprehensive checks" -ForegroundColor Gray
+    Write-Host "   .\run-terraform-checks-docker.ps1 -ModulePath `"./modules/network`" -RebuildImage -GenerateDocumentation" -ForegroundColor Cyan
+    Write-Host ""
+    
+    Write-Host "📋 DOCUMENTATION GENERATION" -ForegroundColor Green
+    Write-Host "   Documentation generation is " -ForegroundColor White -NoNewline
+    Write-Host "OFF by default" -ForegroundColor Red -NoNewline
+    Write-Host " for faster execution." -ForegroundColor White
+    Write-Host "   Use " -ForegroundColor White -NoNewline
+    Write-Host "-GenerateDocumentation" -ForegroundColor Cyan -NoNewline
+    Write-Host " to enable terraform-docs README generation." -ForegroundColor White
+    Write-Host ""
+    
+    Write-Host "🐳 DOCKER REQUIREMENTS" -ForegroundColor Green
+    Write-Host "   • Docker Desktop or Docker Engine must be installed and running" -ForegroundColor White
+    Write-Host "   • Minimum 2GB disk space for Docker image and containers" -ForegroundColor White
+    Write-Host "   • Network access for downloading base images and tool binaries" -ForegroundColor White
+    Write-Host "   • PowerShell 5.1+ or PowerShell Core 7.0+" -ForegroundColor White
+    Write-Host ""
+    
+    Write-Host "🚨 TROUBLESHOOTING" -ForegroundColor Red
+    Write-Host "   • Ensure Docker is running: " -ForegroundColor White -NoNewline
+    Write-Host "docker info" -ForegroundColor Cyan
+    Write-Host "   • Check module path exists and contains .tf files" -ForegroundColor White
+    Write-Host "   • Use " -ForegroundColor White -NoNewline
+    Write-Host "-RebuildImage" -ForegroundColor Cyan -NoNewline
+    Write-Host " if tools are outdated" -ForegroundColor White
+    Write-Host "   • Verify sufficient disk space for Docker operations" -ForegroundColor White
+    Write-Host ""
+    
+    Write-Host "For more information, visit: " -ForegroundColor White -NoNewline
+    Write-Host "https://terraform-docs.io/" -ForegroundColor Blue
+    Write-Host ""
+}
 
 # Function to check if module follows Azure Terraform Module Catalog Criterion
 function Test-AzureModuleCriterion {
     param (
         [string]$ModulePath,
         [string]$DockerPath,
-        [string]$DockerImage
+        [string]$ImageName
     )
     
-    Write-Host "`nChecking Azure Terraform Module Catalog Criterion compliance..." -ForegroundColor Yellow
+    Write-Host "`n🔍 Checking Azure Terraform Module Catalog Criterion compliance..." -ForegroundColor Yellow
     
-    # Define requirements as a hashtable for easier handling
-    $requirementsList = @(
-        @{
-            Name = "Provider Configuration";
-            File = "required_providers.tf"; 
-            Pattern = "required_providers"
-        },
-        @{
-            Name = "Module Versioning"; 
-            File = "versions.tf"; 
-            Pattern = "required_version"
-        },
-        @{
-            Name = "Variable Validation"; 
-            File = "variables.tf"; 
-            Pattern = "validation"
-        },
-        @{
-            Name = "Variable Descriptions"; 
-            File = "variables.tf"; 
-            Pattern = "description"
-        },
-        @{
-            Name = "Output Descriptions"; 
-            File = "outputs.tf"; 
-            Pattern = "description"
-        },
-        @{
-            Name = "Examples Directory"; 
-            File = "examples"; 
-            IsDirectory = $true
-        },
-        @{
-            Name = "Test Files"; 
-            File = "test"; 
-            IsDirectory = $true
-        },
-        @{
-            Name = "README Documentation"; 
-            File = "README.md"; 
-            Pattern = "## Usage"
-        },
-        @{
-            Name = "Architectural Diagram"; 
-            File = "diagram"; 
-            IsDirectory = $true
-        }
+    # Define comprehensive Azure module requirements
+    $azureRequirements = @(
+        @{ Name = "Provider Configuration"; File = "required_providers.tf"; Pattern = "required_providers"; Essential = $true },
+        @{ Name = "Module Versioning"; File = "versions.tf"; Pattern = "required_version"; Essential = $true },
+        @{ Name = "Variable Validation"; File = "variables.tf"; Pattern = "validation"; Essential = $false },
+        @{ Name = "Variable Descriptions"; File = "variables.tf"; Pattern = "description"; Essential = $true },
+        @{ Name = "Output Descriptions"; File = "outputs.tf"; Pattern = "description"; Essential = $true },
+        @{ Name = "Examples Directory"; File = "examples"; IsDirectory = $true; Essential = $true },
+        @{ Name = "Test Files"; File = "test"; IsDirectory = $true; Essential = $false },
+        @{ Name = "README Documentation"; File = "README.md"; Pattern = "## Usage"; Essential = $true },
+        @{ Name = "Architectural Diagram"; File = "diagram"; IsDirectory = $true; Essential = $false },
+        @{ Name = "Main Configuration"; File = "main.tf"; Essential = $true },
+        @{ Name = "Variable Definitions"; File = "variables.tf"; Essential = $true },
+        @{ Name = "Output Definitions"; File = "outputs.tf"; Essential = $true },
+        @{ Name = "License File"; File = "LICENSE"; Essential = $false },
+        @{ Name = "Contributing Guidelines"; File = "CONTRIBUTING.md"; Essential = $false }
     )
     
     $passCount = 0
-    $totalCount = $requirementsList.Count
+    $essentialPassCount = 0
+    $totalCount = $azureRequirements.Count
+    $essentialCount = ($azureRequirements | Where-Object { $_.Essential }).Count
     
-    foreach ($req in $requirementsList) {
-        Write-Host "Checking for: $($req.Name)..." -ForegroundColor Cyan
+    foreach ($req in $azureRequirements) {
+        $status = "✗"
+        $color = "Red"
+        $passed = $false
+        
+        Write-Host "  Checking: $($req.Name)..." -ForegroundColor Cyan -NoNewline
         
         if ($req.IsDirectory) {
             # Directory check
-            $dirCheck = docker run --rm -v "${ModulePath}:/workspace" -w /workspace $DockerImage sh -c "test -d '/$($req.File)' && echo 'exists' || echo 'missing'"
-            if ($dirCheck -eq "exists") {
-                Write-Host "  ✓ $($req.Name) requirement passed" -ForegroundColor Green
-                $passCount++
-            } else {
-                Write-Host "  ✗ $($req.Name) requirement failed - directory '$($req.File)' not found" -ForegroundColor Red
+            $result = docker run --rm -v "${ModulePath}:${DockerPath}" -w $DockerPath $ImageName sh -c "test -d '$($req.File)' && echo 'exists' || echo 'missing'" 2>$null
+            if ($result -eq "exists") {
+                $passed = $true
             }
         } else {
-            # File and pattern check
-            $fileCheck = docker run --rm -v "${ModulePath}:/workspace" -w /workspace $DockerImage sh -c "test -f '/$($req.File)' && echo 'exists' || echo 'missing'"
+            # File check
+            $result = docker run --rm -v "${ModulePath}:${DockerPath}" -w $DockerPath $ImageName sh -c "test -f '$($req.File)' && echo 'exists' || echo 'missing'" 2>$null
             
-            if ($fileCheck -eq "exists") {
+            if ($result -eq "exists") {
                 if ($req.Pattern) {
-                    # Check for pattern in file
-                    $patternCheck = docker run --rm -v "${ModulePath}:/workspace" -w /workspace $DockerImage sh -c "grep -E '$($req.Pattern)' '/$($req.File)' > /dev/null 2>&1 && echo 'found' || echo 'notfound'"
-                    if ($patternCheck -eq "found") {
-                        Write-Host "  ✓ $($req.Name) requirement passed" -ForegroundColor Green
-                        $passCount++
-                    } else {
-                        Write-Host "  ✗ $($req.Name) requirement failed - pattern '$($req.Pattern)' not found in $($req.File)" -ForegroundColor Red
+                    # Pattern check within file
+                    $patternResult = docker run --rm -v "${ModulePath}:${DockerPath}" -w $DockerPath $ImageName sh -c "grep -q '$($req.Pattern)' '$($req.File)' 2>/dev/null && echo 'found' || echo 'notfound'" 2>$null
+                    if ($patternResult -eq "found") {
+                        $passed = $true
                     }
                 } else {
-                    # Just checking if file exists
-                    Write-Host "  ✓ $($req.Name) requirement passed" -ForegroundColor Green
-                    $passCount++
+                    $passed = $true
                 }
-            } else {
-                Write-Host "  ✗ $($req.Name) requirement failed - file '$($req.File)' not found" -ForegroundColor Red
             }
+        }
+        
+        if ($passed) {
+            $status = "✓"
+            $color = "Green"
+            $passCount++
+            if ($req.Essential) { $essentialPassCount++ }
+        }
+        
+        $importance = if ($req.Essential) { " (Essential)" } else { " (Recommended)" }
+        Write-Host " $status$importance" -ForegroundColor $color
+    }
+    
+    # Calculate compliance scores
+    $overallCompliance = [math]::Round(($passCount / $totalCount) * 100)
+    $essentialCompliance = [math]::Round(($essentialPassCount / $essentialCount) * 100)
+    
+    Write-Host "`n📊 AZURE COMPLIANCE RESULTS:" -ForegroundColor White
+    Write-Host "   Overall Compliance: $overallCompliance% ($passCount/$totalCount requirements met)" -ForegroundColor $(if ($overallCompliance -ge 80) { "Green" } elseif ($overallCompliance -ge 60) { "Yellow" } else { "Red" })
+    Write-Host "   Essential Compliance: $essentialCompliance% ($essentialPassCount/$essentialCount essential requirements met)" -ForegroundColor $(if ($essentialCompliance -ge 90) { "Green" } elseif ($essentialCompliance -ge 70) { "Yellow" } else { "Red" })
+    
+    return @{
+        OverallScore = $overallCompliance
+        EssentialScore = $essentialCompliance
+        Status = if ($essentialCompliance -ge 90 -and $overallCompliance -ge 80) { "Excellent" } 
+                elseif ($essentialCompliance -ge 70 -and $overallCompliance -ge 60) { "Good" } 
+                elseif ($essentialCompliance -ge 50) { "Needs Improvement" } 
+                else { "Poor" }
+    }
+}
+
+# Function to show completion summary
+function Show-DockerCompletionSummary {
+    param([hashtable]$Results)
+    
+    Write-Host "`n╔══════════════════════════════════════════════════════════════════════════════╗" -ForegroundColor Blue
+    Write-Host "║                          🎯 DOCKER EXECUTION SUMMARY 🎯                     ║" -ForegroundColor Blue
+    Write-Host "╚══════════════════════════════════════════════════════════════════════════════╝" -ForegroundColor Blue
+    Write-Host ""
+    
+    Write-Host "📋 CHECKS COMPLETED:" -ForegroundColor Green
+      # Terraform Format Check
+    if ($null -ne $Results.TerraformFmt) {
+        $status = if ($Results.TerraformFmt) { "✓ PASSED" } else { "⚠ ISSUES FOUND" }
+        $color = if ($Results.TerraformFmt) { "Green" } else { "Yellow" }
+        Write-Host "   • Terraform Format: $status" -ForegroundColor $color
+    }
+    
+    # TfLint Check
+    if ($null -ne $Results.TfLint) {
+        $status = if ($Results.TfLint) { "✓ PASSED" } else { "⚠ ISSUES FOUND" }
+        $color = if ($Results.TfLint) { "Green" } else { "Yellow" }
+        Write-Host "   • TfLint Validation: $status" -ForegroundColor $color
+    }
+    
+    # Terraform Docs
+    if ($null -ne $Results.TerraformDocs) {
+        if ($Results.TerraformDocs) {
+            Write-Host "   • Documentation Generation: ✓ COMPLETED" -ForegroundColor Green
+        } else {
+            Write-Host "   • Documentation Generation: ✗ SKIPPED (Use -GenerateDocumentation to enable)" -ForegroundColor Gray
         }
     }
     
-    $percentCompliance = [math]::Round(($passCount / $totalCount) * 100)
-    Write-Host "`nAzure Terraform Module Catalog Criterion Compliance: $percentCompliance% ($passCount/$totalCount requirements met)" -ForegroundColor $(if ($percentCompliance -ge 80) { "Green" } elseif ($percentCompliance -ge 60) { "Yellow" } else { "Red" })
+    # Module Structure
+    if ($null -ne $Results.ModuleStructure) {
+        $status = if ($Results.ModuleStructure) { "✓ VALIDATED" } else { "⚠ ISSUES FOUND" }
+        $color = if ($Results.ModuleStructure) { "Green" } else { "Yellow" }
+        Write-Host "   • Module Structure: $status" -ForegroundColor $color
+    }
     
-    return $percentCompliance
+    # Azure Compliance
+    if ($null -ne $Results.AzureCompliance) {
+        $compliance = $Results.AzureCompliance
+        Write-Host "   • Azure Compliance: $($compliance.Status) ($($compliance.OverallScore)%)" -ForegroundColor $(
+            switch ($compliance.Status) {
+                "Excellent" { "Green" }
+                "Good" { "Yellow" }
+                default { "Red" }
+            }
+        )
+    }
+    
+    Write-Host ""
+    Write-Host "🐳 Docker execution completed successfully!" -ForegroundColor Green
+    Write-Host "📁 Module Location: $ModulePath" -ForegroundColor Cyan
+    Write-Host "🕒 Execution Time: $((Get-Date) - $script:StartTime | Select-Object -ExpandProperty TotalSeconds) seconds" -ForegroundColor Cyan
+    Write-Host ""
 }
+
+# Initialize timing
+$script:StartTime = Get-Date
+
+# Display help if requested
+if ($Help) {
+    Show-DockerChecksHelp
+    exit 0
+}
+
+Write-Host ""
+Write-Host "🐳 Docker-based Terraform Module Quality Checker" -ForegroundColor Blue
+Write-Host "📁 Module: $ModulePath" -ForegroundColor Cyan
+Write-Host "🔧 Image: $ImageName" -ForegroundColor Cyan
+
+if ($GenerateDocumentation) {
+    Write-Host "📝 Documentation: " -ForegroundColor Cyan -NoNewline
+    Write-Host "ENABLED" -ForegroundColor Green
+} else {
+    Write-Host "📝 Documentation: " -ForegroundColor Cyan -NoNewline
+    Write-Host "DISABLED" -ForegroundColor Yellow -NoNewline
+    Write-Host " (use -GenerateDocumentation to enable)" -ForegroundColor Gray
+}
+
+Write-Host ""
 
 # Check if module directory exists
 if (-not (Test-Path $ModulePath)) {
-    Write-Host "Error: Module path does not exist: $ModulePath" -ForegroundColor Red
+    Write-Host "❌ Error: Module path does not exist: $ModulePath" -ForegroundColor Red
     exit 1
 }
 
 # Check if Docker is installed and running
+Write-Host "🔍 Checking Docker availability..." -ForegroundColor Yellow
 try {
-    $dockerStatus = docker info 2>&1
+    docker info 2>&1 | Out-Null
     if ($LASTEXITCODE -ne 0) {
-        Write-Host "Error: Docker is not running or not configured properly." -ForegroundColor Red
+        Write-Host "❌ Error: Docker is not running or not configured properly." -ForegroundColor Red
+        Write-Host "   Please start Docker Desktop or Docker Engine and try again." -ForegroundColor Red
         exit 1
     }
-    
-    Write-Host "Docker is available. Proceeding with checks..." -ForegroundColor Green
+    Write-Host "✓ Docker is available and running." -ForegroundColor Green
 } catch {
-    Write-Host "Error: Docker is not installed or not running. Exception: $_" -ForegroundColor Red
+    Write-Host "❌ Error: Docker is not installed or not accessible." -ForegroundColor Red
+    Write-Host "   Please install Docker Desktop and ensure it's running." -ForegroundColor Red
     exit 1
 }
 
-# Pull the required Docker image
-try {
-    Write-Host "Pulling Docker image: $DockerImage..." -ForegroundColor Cyan
-    docker pull $DockerImage 2>&1 | Out-Null
+# Check if Dockerfile exists
+if (-not (Test-Path $DockerfilePath)) {
+    Write-Host "❌ Error: Dockerfile not found at: $DockerfilePath" -ForegroundColor Red
+    Write-Host "   Please ensure the Dockerfile is present in the script directory." -ForegroundColor Red
+    exit 1
+}
+
+# Build or check Docker image
+Write-Host "🛠️  Preparing Docker image: $ImageName..." -ForegroundColor Yellow
+
+$imageExists = docker images -q $ImageName 2>$null
+if (-not $imageExists -or $RebuildImage) {
+    if ($RebuildImage) {
+        Write-Host "🔨 Rebuilding Docker image (forced rebuild)..." -ForegroundColor Cyan
+    } else {
+        Write-Host "🔨 Building Docker image (first time)..." -ForegroundColor Cyan
+    }
+    
+    $buildOutput = docker build -t $ImageName $ScriptDir 2>&1
     if ($LASTEXITCODE -ne 0) {
-        Write-Host "Error: Failed to pull Docker image: $DockerImage" -ForegroundColor Red
+        Write-Host "❌ Error: Failed to build Docker image." -ForegroundColor Red
+        Write-Host $buildOutput -ForegroundColor Red
         exit 1
     }
-    Write-Host "Docker image pulled successfully." -ForegroundColor Green
-} catch {
-    Write-Host "Error pulling Docker image: $_" -ForegroundColor Red
-    exit 1
+    Write-Host "✓ Docker image built successfully." -ForegroundColor Green
+} else {
+    Write-Host "✓ Using existing Docker image." -ForegroundColor Green
 }
 
 # Normalize the module path for Docker
 $absoluteModulePath = (Resolve-Path $ModulePath).Path
 $dockerPath = "/workspace"
-Write-Host "Using Docker with volume mapping: $absoluteModulePath => $dockerPath" -ForegroundColor Cyan
-
-# Create a temporary directory for output files with proper permissions
-$tempOutputDir = Join-Path ([System.IO.Path]::GetTempPath()) ([System.Guid]::NewGuid().ToString())
-New-Item -ItemType Directory -Path $tempOutputDir -Force | Out-Null
-Write-Host "Created temporary directory for outputs: $tempOutputDir" -ForegroundColor Cyan
+Write-Host "📂 Docker volume mapping: $absoluteModulePath => $dockerPath" -ForegroundColor Cyan
 
 # Step 1: Run terraform fmt
-Write-Host "`nStep 1: Running terraform fmt..." -ForegroundColor Yellow
+Write-Host "`n1️⃣  Running terraform fmt check..." -ForegroundColor Yellow
 try {
-    # Run terraform fmt with the Docker container
-    $output = docker run --rm -v "${absoluteModulePath}:${dockerPath}" -w $dockerPath $DockerImage sh -c "terraform fmt -recursive -check 2>&1"
-    $status = $LASTEXITCODE
+    $fmtOutput = docker run --rm -v "${absoluteModulePath}:${dockerPath}" -w $dockerPath $ImageName terraform fmt -recursive -check 2>&1
+    $fmtStatus = $LASTEXITCODE
     
-    if ($status -ne 0) {
-        Write-Host "terraform fmt found formatting issues. Fixing..." -ForegroundColor Yellow
-        docker run --rm -v "${absoluteModulePath}:${dockerPath}" -w $dockerPath $DockerImage sh -c "terraform fmt -recursive"
-        Write-Host "Formatting fixed with terraform fmt." -ForegroundColor Green
+    if ($fmtStatus -ne 0) {
+        Write-Host "⚠️  terraform fmt found formatting issues. Auto-fixing..." -ForegroundColor Yellow
+        if ($fmtOutput) {
+            Write-Host "Issues found: $fmtOutput" -ForegroundColor Gray
+        }
+        docker run --rm -v "${absoluteModulePath}:${dockerPath}" -w $dockerPath $ImageName terraform fmt -recursive 2>&1 | Out-Null
+        Write-Host "✓ Formatting fixed with terraform fmt." -ForegroundColor Green
+        $checkResults.TerraformFmt = $false # Issues were found but fixed
     } else {
-        Write-Host "terraform fmt check completed successfully. No formatting issues found." -ForegroundColor Green
+        Write-Host "✓ terraform fmt check passed. No formatting issues found." -ForegroundColor Green
+        $checkResults.TerraformFmt = $true
     }
 } catch {
-    Write-Host "Error running terraform fmt: $_" -ForegroundColor Red
+    Write-Host "❌ Error running terraform fmt: $_" -ForegroundColor Red
+    $checkResults.TerraformFmt = $false
 }
 
 # Step 2: Run tflint
-Write-Host "`nStep 2: Running tflint..." -ForegroundColor Yellow
+Write-Host "`n2️⃣  Running tflint validation..." -ForegroundColor Yellow
 try {
-    # Create a custom Docker image with tflint for this step
-    $tflintDockerfile = @"
-FROM $DockerImage
-RUN apk add --no-cache curl
-RUN curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash
-"@
+    $tflintOutput = docker run --rm -v "${absoluteModulePath}:${dockerPath}" -w $dockerPath $ImageName tflint --recursive 2>&1
+    $tflintStatus = $LASTEXITCODE
     
-    # Create a temporary directory for the Dockerfile
-    $tempDir = [System.IO.Path]::GetTempPath() + [System.Guid]::NewGuid().ToString()
-    New-Item -ItemType Directory -Path $tempDir -Force | Out-Null
-    $tflintDockerfile | Out-File -FilePath "$tempDir/Dockerfile" -Encoding utf8
-    
-    # Build the custom image
-    Write-Host "Building custom Docker image with tflint..." -ForegroundColor Cyan
-    docker build -t terraform-tflint $tempDir 2>&1 | Out-Null
-    
-    # Run tflint
-    Write-Host "Running tflint in directory: $dockerPath" -ForegroundColor Cyan
-    $output = docker run --rm -v "${absoluteModulePath}:${dockerPath}" -w $dockerPath terraform-tflint sh -c "tflint --recursive 2>&1"
-    $status = $LASTEXITCODE
-    
-    if ($output) {
-        Write-Host $output -ForegroundColor Gray
+    if ($tflintOutput -and $tflintOutput -notmatch "No issues found") {
+        Write-Host $tflintOutput -ForegroundColor Gray
     }
     
-    if ($status -ne 0) {
-        Write-Host "Warning: tflint found issues that need to be addressed." -ForegroundColor Yellow
+    if ($tflintStatus -ne 0) {
+        Write-Host "⚠️  tflint found issues that should be addressed." -ForegroundColor Yellow
+        $checkResults.TfLint = $false
     } else {
-        Write-Host "tflint completed successfully with no issues." -ForegroundColor Green
+        Write-Host "✓ tflint validation passed with no issues." -ForegroundColor Green
+        $checkResults.TfLint = $true
     }
-    
-    # Clean up temp directory
-    Remove-Item -Path $tempDir -Recurse -Force
 } catch {
-    Write-Host "Error running tflint: $_" -ForegroundColor Red
+    Write-Host "❌ Error running tflint: $_" -ForegroundColor Red
+    $checkResults.TfLint = $false
 }
 
-# Step 3: Run terraform-docs
-Write-Host "`nStep 3: Running terraform-docs..." -ForegroundColor Yellow
-try {
-    # Create a custom Docker image with terraform-docs
-    $terraformDocsDockerfile = @"
-FROM $DockerImage
-RUN apk add --no-cache curl tar
-RUN curl -sSLo ./terraform-docs.tar.gz https://terraform-docs.io/dl/v0.16.0/terraform-docs-v0.16.0-linux-amd64.tar.gz && \
-    tar -xzf terraform-docs.tar.gz && \
-    chmod +x terraform-docs && \
-    mv terraform-docs /usr/local/bin/ && \
-    rm -f terraform-docs.tar.gz
-"@
-    
-    # Create a temporary directory for the Dockerfile
-    $tempDir = [System.IO.Path]::GetTempPath() + [System.Guid]::NewGuid().ToString()
-    New-Item -ItemType Directory -Path $tempDir -Force | Out-Null
-    $terraformDocsDockerfile | Out-File -FilePath "$tempDir/Dockerfile" -Encoding utf8
-    
-    # Build the custom image
-    Write-Host "Building custom Docker image with terraform-docs..." -ForegroundColor Cyan
-    docker build -t terraform-docs $tempDir 2>&1 | Out-Null
-    
-    # Run terraform-docs and output to temp directory to avoid permission issues
-    Write-Host "Running terraform-docs in directory: $dockerPath" -ForegroundColor Cyan
-    
-    # Mount both the module directory and temp directory
-    $output = docker run --rm `
-        -v "${absoluteModulePath}:${dockerPath}" `
-        -v "${tempOutputDir}:/output" `
-        -w $dockerPath `
-        --user root `
-        terraform-docs sh -c "terraform-docs markdown table . > /output/README_GENERATED.md 2>&1 || echo 'Failed to write to output directory'" 
-    $status = $LASTEXITCODE
-    
-    if ($status -ne 0 -or $output -like "*Failed to write*") {
-        # Try a different approach if the first one failed
-        $output = docker run --rm `
-            -v "${absoluteModulePath}:${dockerPath}" `
-            -v "${tempOutputDir}:/output" `
-            -w $dockerPath `
-            --user root `
-            terraform-docs sh -c "terraform-docs markdown table . > /tmp/readme.md && cp /tmp/readme.md /output/README_GENERATED.md 2>&1"
-        $status = $LASTEXITCODE
-    }
-    
-    if ($status -ne 0) {
-        Write-Host "Warning: terraform-docs had issues: $output" -ForegroundColor Yellow
-    } else {
-        # Copy the generated file from the temp directory to the module directory
-        $readmeGeneratedPath = Join-Path $tempOutputDir "README_GENERATED.md"
-        if (Test-Path $readmeGeneratedPath) {
-            Copy-Item -Path $readmeGeneratedPath -Destination (Join-Path $absoluteModulePath "README_GENERATED.md") -Force
-            Write-Host "terraform-docs completed successfully." -ForegroundColor Green
-            Write-Host "Documentation generated to: README_GENERATED.md" -ForegroundColor Cyan
+# Step 3: Run terraform-docs (conditional)
+if ($GenerateDocumentation) {
+    Write-Host "`n3️⃣  Running terraform-docs generation..." -ForegroundColor Yellow
+    try {
+        $docsOutput = docker run --rm -v "${absoluteModulePath}:${dockerPath}" -w $dockerPath $ImageName terraform-docs markdown table . 2>&1
+        $docsStatus = $LASTEXITCODE
+        
+        if ($docsStatus -eq 0 -and $docsOutput) {
+            # Write output to README_GENERATED.md
+            $readmeGeneratedPath = Join-Path $absoluteModulePath "README_GENERATED.md"
+            $docsOutput | Out-File -FilePath $readmeGeneratedPath -Encoding utf8
+            Write-Host "✓ terraform-docs completed successfully." -ForegroundColor Green
+            Write-Host "📄 Documentation generated: README_GENERATED.md" -ForegroundColor Cyan
+            $checkResults.TerraformDocs = $true
         } else {
-            Write-Host "Warning: README_GENERATED.md file was not created in the output directory." -ForegroundColor Yellow
-            
-            # Check if it was created directly in the module directory
-            $directReadmePath = Join-Path $absoluteModulePath "README_GENERATED.md"
-            if (Test-Path $directReadmePath) {
-                Write-Host "Documentation was generated directly in the module directory." -ForegroundColor Green
-            } else {
-                Write-Host "Warning: README_GENERATED.md file was not created in either location. Check for errors in terraform-docs execution." -ForegroundColor Yellow
-            }
+            Write-Host "⚠️  terraform-docs had issues: $docsOutput" -ForegroundColor Yellow
+            $checkResults.TerraformDocs = $false
         }
+    } catch {
+        Write-Host "❌ Error running terraform-docs: $_" -ForegroundColor Red
+        $checkResults.TerraformDocs = $false
     }
-    
-    # Clean up temp directory
-    Remove-Item -Path $tempDir -Recurse -Force
-} catch {
-    Write-Host "Error running terraform-docs: $_" -ForegroundColor Red
+} else {
+    Write-Host "`n3️⃣  terraform-docs generation: " -ForegroundColor Yellow -NoNewline
+    Write-Host "SKIPPED" -ForegroundColor Gray -NoNewline
+    Write-Host " (use -GenerateDocumentation to enable)" -ForegroundColor Gray
+    $checkResults.TerraformDocs = $false
 }
 
 # Step 4: Validate module structure (if not skipped)
 if (-not $SkipValidation) {
-    Write-Host "`nStep 4: Validating module structure..." -ForegroundColor Yellow
+    Write-Host "`n4️⃣  Validating module structure..." -ForegroundColor Yellow
     try {
-        # Define expected files for a standard Terraform module
         $expectedFiles = @("main.tf", "variables.tf", "outputs.tf", "README.md")
-        $recommendedFiles = @("required_providers.tf", "versions.tf", "examples/", "test/")
+        $recommendedFiles = @("required_providers.tf", "versions.tf")
+        $recommendedDirs = @("examples", "test")
         
-        # Check for expected files
-        Write-Host "Checking for essential module files..." -ForegroundColor Cyan
+        $structureValid = $true
+        
+        # Check essential files
+        Write-Host "   Checking essential files..." -ForegroundColor Cyan
         foreach ($file in $expectedFiles) {
-            $fileCheck = docker run --rm -v "${absoluteModulePath}:${dockerPath}" -w $dockerPath $DockerImage sh -c "test -e '$file' && echo 'exists' || echo 'missing'"
-            if ($fileCheck -eq "missing") {
-                Write-Host "Warning: Essential file '$file' is missing from the module." -ForegroundColor Yellow
+            $fileExists = docker run --rm -v "${absoluteModulePath}:${dockerPath}" -w $dockerPath $ImageName sh -c "test -f '$file' && echo 'exists' || echo 'missing'" 2>$null
+            if ($fileExists -eq "missing") {
+                Write-Host "   ⚠️  Essential file '$file' is missing from the module." -ForegroundColor Yellow
+                $structureValid = $false
             } else {
-                Write-Host "Essential file '$file' exists." -ForegroundColor Green
+                Write-Host "   ✓ Essential file '$file' exists." -ForegroundColor Green
             }
         }
         
-        # Check for recommended files
-        Write-Host "`nChecking for recommended module files/directories..." -ForegroundColor Cyan
+        # Check recommended files
+        Write-Host "`n   Checking recommended files..." -ForegroundColor Cyan
         foreach ($file in $recommendedFiles) {
-            $fileCheck = docker run --rm -v "${absoluteModulePath}:${dockerPath}" -w $dockerPath $DockerImage sh -c "test -e '$file' && echo 'exists' || echo 'missing'"
-            if ($fileCheck -eq "missing") {
-                Write-Host "Note: Recommended file/directory '$file' is missing from the module." -ForegroundColor Gray
+            $fileExists = docker run --rm -v "${absoluteModulePath}:${dockerPath}" -w $dockerPath $ImageName sh -c "test -f '$file' && echo 'exists' || echo 'missing'" 2>$null
+            if ($fileExists -eq "missing") {
+                Write-Host "   ℹ️  Recommended file '$file' is missing from the module." -ForegroundColor Gray
             } else {
-                Write-Host "Recommended file/directory '$file' exists." -ForegroundColor Green
+                Write-Host "   ✓ Recommended file '$file' exists." -ForegroundColor Green
             }
         }
         
-        Write-Host "`nModule structure validation completed." -ForegroundColor Cyan
+        # Check recommended directories
+        Write-Host "`n   Checking recommended directories..." -ForegroundColor Cyan
+        foreach ($dir in $recommendedDirs) {
+            $dirExists = docker run --rm -v "${absoluteModulePath}:${dockerPath}" -w $dockerPath $ImageName sh -c "test -d '$dir' && echo 'exists' || echo 'missing'" 2>$null
+            if ($dirExists -eq "missing") {
+                Write-Host "   ℹ️  Recommended directory '$dir/' is missing from the module." -ForegroundColor Gray
+            } else {
+                Write-Host "   ✓ Recommended directory '$dir/' exists." -ForegroundColor Green
+            }
+        }
+        
+        if ($structureValid) {
+            Write-Host "`n✓ Module structure validation completed successfully." -ForegroundColor Green
+        } else {
+            Write-Host "`n⚠️  Module structure validation found issues." -ForegroundColor Yellow
+        }
+        $checkResults.ModuleStructure = $structureValid
+        
     } catch {
-        Write-Host "Error validating module structure: $_" -ForegroundColor Red
+        Write-Host "❌ Error validating module structure: $_" -ForegroundColor Red
+        $checkResults.ModuleStructure = $false
     }
+} else {
+    Write-Host "`n4️⃣  Module structure validation: " -ForegroundColor Yellow -NoNewline
+    Write-Host "SKIPPED" -ForegroundColor Gray -NoNewline
+    Write-Host " (disabled with -SkipValidation)" -ForegroundColor Gray
 }
 
-Write-Host "`nAll checks and validations completed!" -ForegroundColor Green
-Write-Host "Please review the output and address any issues identified by the tools." -ForegroundColor Cyan
-
-# Run Azure Module check if specified
-if ($AzureModuleCheck) {    $complianceScore = Test-AzureModuleCriterion -ModulePath $absoluteModulePath -DockerPath $dockerPath -DockerImage $DockerImage
-    
-    if ($complianceScore -ge 80) {
-        Write-Host "`nModule meets Azure Terraform Module Catalog Criterion with a score of $complianceScore%." -ForegroundColor Green
-    } elseif ($complianceScore -ge 60) {
-        Write-Host "`nModule partially meets Azure Terraform Module Catalog Criterion with a score of $complianceScore%." -ForegroundColor Yellow
-        Write-Host "Please address the issues noted above to improve compliance." -ForegroundColor Yellow
-    } else {
-        Write-Host "`nModule does not meet Azure Terraform Module Catalog Criterion with a score of $complianceScore%." -ForegroundColor Red
-        Write-Host "Significant improvements are needed to meet the standard. Please address the issues noted above." -ForegroundColor Red
-    }
+# Step 5: Run Azure Module check if specified
+if ($AzureModuleCheck) {
+    $complianceResult = Test-AzureModuleCriterion -ModulePath $absoluteModulePath -DockerPath $dockerPath -ImageName $ImageName
+    $checkResults.AzureCompliance = $complianceResult
+} else {
+    Write-Host "`n5️⃣  Azure compliance validation: " -ForegroundColor Yellow -NoNewline
+    Write-Host "SKIPPED" -ForegroundColor Gray -NoNewline
+    Write-Host " (use -AzureModuleCheck to enable)" -ForegroundColor Gray
 }
 
-# Clean up the temporary directory if it exists
-if (Test-Path $tempOutputDir) {
-    Remove-Item -Path $tempOutputDir -Recurse -Force -ErrorAction SilentlyContinue
-    Write-Host "Cleaned up temporary output directory." -ForegroundColor Cyan
+# Display completion summary
+Show-DockerCompletionSummary -Results $checkResults
+
+# Exit with appropriate code
+$hasErrors = $checkResults.Values | Where-Object { $_ -eq $false } | Measure-Object | Select-Object -ExpandProperty Count
+if ($hasErrors -gt 0) {
+    Write-Host "⚠️  Some checks found issues. Please review the output above." -ForegroundColor Yellow
+    exit 1
+} else {
+    Write-Host "🎉 All enabled checks completed successfully!" -ForegroundColor Green
+    exit 0
 }
