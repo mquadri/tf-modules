@@ -35,6 +35,201 @@ The following resources are used by this module:
 
 - **Old Variables Removed:** All old variables (e.g., `rules`, `predefined_rules`, `custom_rules`, `destination_address_prefix`, `destination_address_prefixes`, `source_address_prefix`, `source_address_prefixes` etc.) have been removed and replaced with the consolidated `security_rules` map.
 
+## Usage
+
+### Basic Example
+
+```hcl
+module "nsg_example" {
+  source = "path/to/nsg/module"
+  
+  # Required variables
+  name                = "my-nsg"
+  location            = "East US"
+  resource_group_name = "my-resource-group"
+  
+  # Optional: Define security rules
+  security_rules = {
+    "allow_rdp" = {
+      name                       = "AllowRDP_From_MyIP"
+      priority                   = 200
+      direction                  = "Inbound"
+      access                     = "Allow"
+      protocol                   = "Tcp"
+      source_port_range          = "*"
+      destination_port_range     = "3389"
+      source_address_prefix      = "203.0.113.0/24"  # Replace with your IP range
+      destination_address_prefix = "*"
+    }
+    "allow_https" = {
+      name                       = "AllowWebInbound"
+      priority                   = 250
+      direction                  = "Inbound"
+      access                     = "Allow"
+      protocol                   = "Tcp"
+      source_port_range          = "*"
+      destination_port_range     = "443"
+      source_address_prefix      = "Internet"
+      destination_address_prefix = "*"
+    }
+  }
+  
+  # Optional: Add tags
+  tags = {
+    Environment = "Production"
+    Purpose     = "WebServerNSG"
+    Owner       = "IT Team"
+  }
+}
+```
+
+### Advanced Example with Multiple Rules
+
+```hcl
+module "nsg_advanced" {
+  source = "path/to/nsg/module"
+  
+  name                = "advanced-nsg"
+  location            = "East US"
+  resource_group_name = "my-resource-group"
+  
+  security_rules = {
+    "allow_http" = {
+      name                       = "AllowHTTP"
+      priority                   = 100
+      direction                  = "Inbound"
+      access                     = "Allow"
+      protocol                   = "Tcp"
+      source_port_range          = "*"
+      destination_port_range     = "80"
+      source_address_prefix      = "Internet"
+      destination_address_prefix = "*"
+    }
+    "allow_https" = {
+      name                       = "AllowHTTPS"
+      priority                   = 110
+      direction                  = "Inbound"
+      access                     = "Allow"
+      protocol                   = "Tcp"
+      source_port_range          = "*"
+      destination_port_range     = "443"
+      source_address_prefix      = "Internet"
+      destination_address_prefix = "*"
+    }
+    "allow_ssh" = {
+      name                       = "AllowSSH_From_Management"
+      priority                   = 200
+      direction                  = "Inbound"
+      access                     = "Allow"
+      protocol                   = "Tcp"
+      source_port_range          = "*"
+      destination_port_range     = "22"
+      source_address_prefix      = "10.0.0.0/24"  # Management subnet
+      destination_address_prefix = "*"
+    }
+    "deny_all_inbound" = {
+      name                       = "DenyAllInbound"
+      priority                   = 4096
+      direction                  = "Inbound"
+      access                     = "Deny"
+      protocol                   = "*"
+      source_port_range          = "*"
+      destination_port_range     = "*"
+      source_address_prefix      = "*"
+      destination_address_prefix = "*"
+    }
+  }
+  
+  # Optional: Configure diagnostic settings
+  diagnostic_settings = {
+    "log_analytics" = {
+      name                  = "nsg-diagnostics"
+      workspace_resource_id = "/subscriptions/xxx/resourceGroups/xxx/providers/Microsoft.OperationalInsights/workspaces/xxx"
+      log_groups           = ["allLogs"]
+      metric_categories    = ["AllMetrics"]
+    }
+  }
+  
+  # Optional: Configure resource lock
+  lock = {
+    kind = "CanNotDelete"
+    name = "nsg-lock"
+  }
+  
+  tags = {
+    Environment = "Production"
+    Application = "WebApp"
+    CostCenter  = "IT-001"
+  }
+}
+```
+
+### Example with Port Ranges and Service Tags
+
+```hcl
+module "nsg_service_tags" {
+  source = "path/to/nsg/module"
+  
+  name                = "service-tags-nsg"
+  location            = "East US"
+  resource_group_name = "my-resource-group"
+  
+  security_rules = {
+    "allow_sql_from_app_subnet" = {
+      name                       = "AllowSQL_FromAppSubnet"
+      priority                   = 100
+      direction                  = "Inbound"
+      access                     = "Allow"
+      protocol                   = "Tcp"
+      source_port_range          = "*"
+      destination_port_range     = "1433"
+      source_address_prefix      = "10.0.1.0/24"  # App subnet
+      destination_address_prefix = "Sql.EastUS"   # SQL Service Tag
+    }
+    "allow_storage_access" = {
+      name                       = "AllowStorage"
+      priority                   = 200
+      direction                  = "Outbound"
+      access                     = "Allow"
+      protocol                   = "Tcp"
+      source_port_range          = "*"
+      destination_port_ranges    = ["80", "443"]  # Multiple ports
+      source_address_prefix      = "*"
+      destination_address_prefix = "Storage.EastUS"
+    }
+  }
+}
+```
+
+### Important Security Considerations
+
+⚠️ **Security Best Practices:**
+
+1. **Restrict Source IPs**: Always use specific IP ranges instead of `*` or `Internet` when possible
+2. **Least Privilege**: Only open the ports and protocols that are absolutely necessary
+3. **Use Service Tags**: Leverage Azure service tags instead of IP ranges when connecting to Azure services
+4. **Document Rules**: Use descriptive names and include descriptions for each security rule
+5. **Regular Review**: Periodically review and audit your NSG rules
+
+### Provider Configuration
+
+This module requires the AzureRM provider. Add this to your configuration:
+
+```hcl
+terraform {
+  required_providers {
+    azurerm = {
+      source  = "hashicorp/azurerm"
+      version = "~> 3.71"
+    }
+  }
+}
+
+provider "azurerm" {
+  features {}
+}
+```
+
 <!-- markdownlint-disable MD013 -->
 ## Required Inputs
 

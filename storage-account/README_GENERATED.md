@@ -1,9 +1,3 @@
-Terraform v1.12.1
-on linux_amd64
-TFLint version 0.58.0
-+ ruleset.terraform (0.12.0-bundled)
-terraform-docs version v0.16.0 1f686b1 linux/amd64
-All tools installed and ready to use
 ## Requirements
 
 | Name | Version |

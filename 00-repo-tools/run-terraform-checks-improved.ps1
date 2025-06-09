@@ -7,6 +7,7 @@
     - Code formatting (terraform fmt)
     - Linting (tflint)  
     - Documentation generation (terraform-docs)
+    - README.md analysis (Super-Linter)
     - Module structure validation
     - Azure Terraform Module Catalog Criterion compliance (optional)
 
@@ -23,13 +24,17 @@
     Skip the basic module structure validation checks.
     Use when you only want formatting/linting without file structure analysis.
 
+.PARAMETER SkipSuperLinter
+    Skip the Super-Linter analysis for README.md files.
+    Use when you want to avoid Docker dependency or faster execution.
+
 .PARAMETER Help
     Display comprehensive help information with usage examples and troubleshooting.
 
 .EXAMPLE
     .\run-terraform-checks-improved.ps1 -ModulePath "C:\terraform\modules\my-module"
     
-    Runs basic quality checks: terraform fmt, tflint, terraform-docs, structure validation
+    Runs basic quality checks: terraform fmt, tflint, terraform-docs, superlinter, structure validation
     Output: README_GENERATED.md file with module documentation
 
 .EXAMPLE
@@ -41,7 +46,7 @@
 .EXAMPLE
     .\run-terraform-checks-improved.ps1 -ModulePath "C:\terraform\modules\my-module" -SkipValidation
     
-    Runs only: terraform fmt, tflint, terraform-docs (faster execution)
+    Runs only: terraform fmt, tflint, terraform-docs, superlinter (faster execution)
 
 .EXAMPLE
     .\run-terraform-checks-improved.ps1 -Help
@@ -77,10 +82,12 @@
 #
 # OUTPUT FILES:
 #   - README_GENERATED.md - Auto-generated documentation from terraform-docs
+#   - Super-Linter reports - README.md quality analysis results
 #
 # TROUBLESHOOTING:
 #   - If WSL issues occur, ensure Ubuntu distribution is installed: wsl --install -d Ubuntu
 #   - If tools fail to install, manually install them in WSL: terraform, tflint, terraform-docs
+#   - If Docker issues occur, manually install Docker in WSL: sudo apt install docker.io
 #   - For path conversion errors, try running from WSL directly: wsl cd /mnt/c/path/to/module
 # 
 # ==============================================================
@@ -94,6 +101,9 @@ param (
     
     [Parameter(Mandatory=$false)]
     [switch]$SkipValidation,
+    
+    [Parameter(Mandatory=$false)]
+    [switch]$SkipSuperLinter,
     
     [Parameter(Mandatory=$false)]
     [switch]$Help
@@ -120,10 +130,13 @@ PARAMETERS:
         Enable Azure Terraform Module Catalog Criterion compliance check
         Validates 9 specific requirements for Azure marketplace modules
         Provides compliance percentage and detailed requirement analysis
-        
-    -SkipValidation [Switch]  
+          -SkipValidation [Switch]  
         Skip the basic module structure validation checks
         Use when you only want formatting/linting without file structure analysis
+        
+    -SkipSuperLinter [Switch]
+        Skip the Super-Linter analysis for README.md files
+        Use when you want to avoid Docker dependency or faster execution
         
     -Help [Switch]
         Display this comprehensive help information
@@ -133,7 +146,7 @@ USAGE SCENARIOS:
     🔧 BASIC QUALITY CHECK
     .\run-terraform-checks-improved.ps1 -ModulePath "C:\terraform\modules\my-module"
     
-    Runs: terraform fmt, tflint, terraform-docs, structure validation
+    Runs: terraform fmt, tflint, terraform-docs, superlinter, structure validation
     Output: README_GENERATED.md file with module documentation
     
     📋 AZURE COMPLIANCE CHECK  
@@ -143,13 +156,17 @@ USAGE SCENARIOS:
     - Azure Terraform Module Catalog Criterion validation
     - Compliance percentage score (target: 80%+ for marketplace)
     - Detailed breakdown of 9 specific requirements
-    - Recommendations for missing components
-    
-    ⚡ QUICK FORMAT & LINT
+    - Recommendations for missing components    ⚡ QUICK FORMAT & LINT
     .\run-terraform-checks-improved.ps1 -ModulePath "C:\terraform\modules\my-module" -SkipValidation
     
-    Runs only: terraform fmt, tflint, terraform-docs
+    Runs only: terraform fmt, tflint, terraform-docs, superlinter
     Skips: structure validation (faster execution)
+    
+    🐳 SKIP DOCKER DEPENDENCY
+    .\run-terraform-checks-improved.ps1 -ModulePath "C:\terraform\modules\my-module" -SkipSuperLinter
+    
+    Runs all checks except Super-Linter (no Docker required)
+    Good for environments without Docker available
 
 AZURE MODULE CATALOG REQUIREMENTS CHECKED:
 
@@ -198,6 +215,8 @@ TOOLS AUTOMATICALLY INSTALLED (if missing):
     - terraform: Infrastructure as Code tool
     - tflint: Terraform linter for best practices
     - terraform-docs: Documentation generator
+    - docker: Container runtime (for Super-Linter)
+    - super-linter: Comprehensive code quality analysis
 
 SYSTEM REQUIREMENTS:
     ✓ Windows 10/11 with WSL enabled
@@ -255,6 +274,7 @@ if (-not $ModulePath) {
    ✓ terraform fmt     - Code formatting
    ✓ tflint           - Static analysis & linting  
    ✓ terraform-docs   - Documentation generation
+   ✓ super-linter     - README.md quality analysis
    ✓ Structure check  - Module file validation
    ✓ Azure compliance - Marketplace readiness (optional)
 
@@ -270,6 +290,7 @@ Write-Host @"
 
 Target Module: $ModulePath
 Azure Compliance Check: $(if ($AzureModuleCheck) { '✅ ENABLED' } else { '❌ Disabled' })
+Super-Linter Analysis: $(if ($SkipSuperLinter) { '❌ Skipped' } else { '✅ Enabled' })
 Structure Validation: $(if ($SkipValidation) { '❌ Skipped' } else { '✅ Enabled' })
 
 Starting comprehensive module analysis...
@@ -336,13 +357,17 @@ function Test-AzureModuleCriterion {
     
     $passCount = 0
     $totalCount = $requirementsList.Count
+      # Define bash operators to avoid PowerShell parsing issues
+    $andOperator = [char]38 + [char]38  # &&
+    $orOperator = [char]124 + [char]124  # ||
     
     foreach ($req in $requirementsList) {
         Write-Host "Checking for: $($req.Name)..." -ForegroundColor Cyan
         
         if ($req.IsDirectory) {
             # Directory check
-            $dirCheck = wsl.exe --distribution "$Distribution" --exec bash -c "test -d '$WslPath/$($req.File)' && echo 'exists' || echo 'missing'"
+            $dirCommand = "test -d '$WslPath/$($req.File)' $andOperator echo 'exists' $orOperator echo 'missing'"
+            $dirCheck = wsl.exe --distribution "$Distribution" --exec bash -c $dirCommand
             if ($dirCheck -eq "exists") {
                 Write-Host "  ✓ $($req.Name) requirement passed" -ForegroundColor Green
                 $passCount++
@@ -351,12 +376,13 @@ function Test-AzureModuleCriterion {
             }
         } else {
             # File and pattern check
-            $fileCheck = wsl.exe --distribution "$Distribution" --exec bash -c "test -f '$WslPath/$($req.File)' && echo 'exists' || echo 'missing'"
+            $fileCommand = "test -f '$WslPath/$($req.File)' $andOperator echo 'exists' $orOperator echo 'missing'"
+            $fileCheck = wsl.exe --distribution "$Distribution" --exec bash -c $fileCommand
             
             if ($fileCheck -eq "exists") {
-                if ($req.Pattern) {
-                    # Check for pattern in file
-                    $patternCheck = wsl.exe --distribution "$Distribution" --exec bash -c "grep -E '$($req.Pattern)' '$WslPath/$($req.File)' > /dev/null 2>&1 && echo 'found' || echo 'notfound'"
+                if ($req.Pattern) {                    # Check for pattern in file
+                    $patternCommand = "grep -E '$($req.Pattern)' '$WslPath/$($req.File)' >/dev/null 2>&1 $andOperator echo 'found' $orOperator echo 'notfound'"
+                    $patternCheck = wsl.exe --distribution "$Distribution" --exec bash -c $patternCommand
                     if ($patternCheck -eq "found") {
                         Write-Host "  ✓ $($req.Name) requirement passed" -ForegroundColor Green
                         $passCount++
@@ -367,15 +393,16 @@ function Test-AzureModuleCriterion {
                     # Just checking if file exists
                     Write-Host "  ✓ $($req.Name) requirement passed" -ForegroundColor Green
                     $passCount++
-                }
-            } else {
+                }            } else {
                 Write-Host "  ✗ $($req.Name) requirement failed - file '$($req.File)' not found" -ForegroundColor Red
             }
         }
     }
     
-    $percentCompliance = [math]::Round(($passCount / $totalCount) * 100)
-    Write-Host "`nAzure Terraform Module Catalog Criterion Compliance: $percentCompliance% ($passCount/$totalCount requirements met)" -ForegroundColor $(if ($percentCompliance -ge 80) { "Green" } elseif ($percentCompliance -ge 60) { "Yellow" } else { "Red" })
+        $percentCompliance = [math]::Round(($passCount / $totalCount) * 100)
+    $reqsText = "requirements met"
+    $complianceMessage = "Azure Terraform Module Catalog Criterion Compliance: $percentCompliance% ($passCount/$totalCount $reqsText)"
+    Write-Host "`n$complianceMessage" -ForegroundColor $(if ($percentCompliance -ge 80) { "Green" } elseif ($percentCompliance -ge 60) { "Yellow" } else { "Red" })
     
     return $percentCompliance
 }
@@ -420,10 +447,9 @@ try {
         Write-Host "Attempting alternative path conversion method 1..." -ForegroundColor Yellow
         $normalizedPath = $ModulePath.Replace('\', '/')
         $wslPath = wsl.exe --distribution $ubuntuDistro --exec bash -c "echo '$normalizedPath'" 2>&1
-        if ($LASTEXITCODE -ne 0 -or $wslPath -eq "") {
-            # Second fallback: Try direct path mapping based on known WSL path structure
+        if ($LASTEXITCODE -ne 0 -or $wslPath -eq "") {            # Second fallback: Try direct path mapping based on known WSL path structure
             Write-Host "Attempting alternative path conversion method 2..." -ForegroundColor Yellow
-            if ($ModulePath -match "^([A-Za-z]):\\(.*)$") {
+            if ($ModulePath -match '^([A-Za-z]):\\(.*)$') {
                 $driveLetter = $Matches[1].ToLower()
                 $restOfPath = $Matches[2].Replace('\', '/')
                 $wslPath = "/mnt/$driveLetter/$restOfPath"
@@ -442,29 +468,35 @@ try {
 
 # Step 1: Run terraform fmt
 Write-Host "`nStep 1: Running terraform fmt..." -ForegroundColor Yellow
-try {
-    # Check if terraform is installed
-    $terraformCheck = wsl.exe --distribution $ubuntuDistro --exec bash -c "command -v terraform > /dev/null 2>&1 || echo 'not-installed'"
-    if ($terraformCheck -eq "not-installed") {
-        Write-Host "Terraform is not installed in WSL. Installing..." -ForegroundColor Cyan
-        wsl.exe --distribution $ubuntuDistro --exec bash -c "curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add - && sudo apt-add-repository 'deb [arch=amd64] https://apt.releases.hashicorp.com \$(lsb_release -cs) main' && sudo apt-get update && sudo apt-get install -y terraform"
-        
-        # Verify installation was successful
-        $terraformVerify = wsl.exe --distribution $ubuntuDistro --exec bash -c "command -v terraform > /dev/null 2>&1 || echo 'failed'"
+
+# Define bash operators to avoid PowerShell parsing issues
+$andOperator = [char]38 + [char]38  # &&
+$orOperator = [char]124 + [char]124  # ||
+
+try {# Check if terraform is installed
+    $terraformCheckCmd = "command -v terraform >/dev/null 2>&1 $orOperator echo 'not-installed'"
+    $terraformCheck = wsl.exe --distribution $ubuntuDistro --exec bash -c $terraformCheckCmd
+    if ($terraformCheck -eq "not-installed") {        Write-Host "Terraform is not installed in WSL. Installing..." -ForegroundColor Cyan
+        $installCmd = "curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add - $andOperator sudo apt-add-repository 'deb [arch=amd64] https://apt.releases.hashicorp.com \$(lsb_release -cs) main' $andOperator sudo apt-get update $andOperator sudo apt-get install -y terraform"
+        wsl.exe --distribution $ubuntuDistro --exec bash -c $installCmd
+          # Verify installation was successful
+        $terraformVerifyCmd = "command -v terraform >/dev/null 2>&1 $orOperator echo 'failed'"
+        $terraformVerify = wsl.exe --distribution $ubuntuDistro --exec bash -c $terraformVerifyCmd
         if ($terraformVerify -eq "failed") {
             Write-Host "Warning: Failed to install Terraform automatically. Please install manually in your WSL distribution." -ForegroundColor Yellow
             Write-Host "Skipping terraform fmt check." -ForegroundColor Yellow
             return
         }
     }
-    
-    # Run terraform fmt
-    $output = wsl.exe --distribution $ubuntuDistro --exec bash -c "cd '$wslPath' && terraform fmt -recursive -check 2>&1"
+      # Run terraform fmt
+    $fmtCmd = "cd '$wslPath' $andOperator terraform fmt -recursive -check"
+    $output = wsl.exe --distribution $ubuntuDistro --exec bash -c $fmtCmd
     $status = $LASTEXITCODE
     
     if ($status -ne 0) {
         Write-Host "terraform fmt found formatting issues. Fixing..." -ForegroundColor Yellow
-        wsl.exe --distribution $ubuntuDistro --exec bash -c "cd '$wslPath' && terraform fmt -recursive"
+        $fmtFixCmd = "cd '$wslPath' $andOperator terraform fmt -recursive"
+        wsl.exe --distribution $ubuntuDistro --exec bash -c $fmtFixCmd
         Write-Host "Formatting fixed with terraform fmt." -ForegroundColor Green
     } else {
         Write-Host "terraform fmt check completed successfully. No formatting issues found." -ForegroundColor Green
@@ -476,13 +508,14 @@ try {
 # Step 2: Run tflint
 Write-Host "`nStep 2: Running tflint..." -ForegroundColor Yellow
 try {
-    $tflintResult = wsl.exe --distribution $ubuntuDistro --exec bash -c "command -v tflint > /dev/null 2>&1 || echo 'not-installed'"
+    $tflintCmd = "command -v tflint >/dev/null 2>&1 $orOperator echo 'not-installed'"
+    $tflintResult = wsl.exe --distribution $ubuntuDistro --exec bash -c $tflintCmd
     if ($tflintResult -eq "not-installed") {
         Write-Host "tflint is not installed. Installing now..." -ForegroundColor Cyan
         wsl.exe --distribution $ubuntuDistro --exec bash -c "curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash"
-        
-        # Verify installation was successful
-        $tflintVerify = wsl.exe --distribution $ubuntuDistro --exec bash -c "command -v tflint > /dev/null 2>&1 || echo 'failed'"
+          # Verify installation was successful
+        $tflintVerifyCmd = "command -v tflint >/dev/null 2>&1 $orOperator echo 'failed'"
+        $tflintVerify = wsl.exe --distribution $ubuntuDistro --exec bash -c $tflintVerifyCmd
         if ($tflintVerify -eq "failed") {
             Write-Host "Warning: Failed to install tflint automatically. Please install manually in your WSL distribution." -ForegroundColor Yellow
             Write-Host "Skipping tflint check." -ForegroundColor Yellow
@@ -491,7 +524,7 @@ try {
     }
 
     Write-Host "Running tflint in directory: $wslPath" -ForegroundColor Cyan
-    $output = wsl.exe --distribution $ubuntuDistro --exec bash -c "cd '$wslPath' && tflint --recursive 2>&1"
+    $output = wsl.exe --distribution $ubuntuDistro --exec bash -c "cd '$wslPath' $andOperator tflint --recursive"
     $status = $LASTEXITCODE
     
     if ($output) {
@@ -509,9 +542,9 @@ try {
 
 # Step 3: Run terraform-docs
 Write-Host "`nStep 3: Running terraform-docs..." -ForegroundColor Yellow
-try {
-    # Check if terraform-docs is installed, install to user bin if not
-    $terraformDocsResult = wsl.exe --distribution $ubuntuDistro --exec bash -c "command -v terraform-docs > /dev/null 2>&1 || echo 'not-installed'"
+try {    # Check if terraform-docs is installed, install to user bin if not
+    $terraformDocsCmd = "command -v terraform-docs >/dev/null 2>&1 $orOperator echo 'not-installed'"
+    $terraformDocsResult = wsl.exe --distribution $ubuntuDistro --exec bash -c $terraformDocsCmd
     if ($terraformDocsResult -eq "not-installed") {
         Write-Host "terraform-docs is not installed. Installing now..." -ForegroundColor Cyan
         
@@ -519,13 +552,13 @@ try {
         wsl.exe --distribution $ubuntuDistro --exec bash -c "mkdir -p ~/bin"
         
         # Download and install terraform-docs
-        wsl.exe --distribution $ubuntuDistro --exec bash -c "curl -sSLo ./terraform-docs.tar.gz https://terraform-docs.io/dl/v0.16.0/terraform-docs-v0.16.0-linux-amd64.tar.gz && tar -xzf terraform-docs.tar.gz && chmod +x terraform-docs && mv terraform-docs ~/bin/ && rm -f terraform-docs.tar.gz"
+        wsl.exe --distribution $ubuntuDistro --exec bash -c "curl -sSLo ./terraform-docs.tar.gz https://terraform-docs.io/dl/v0.16.0/terraform-docs-v0.16.0-linux-amd64.tar.gz $andOperator tar -xzf terraform-docs.tar.gz $andOperator chmod +x terraform-docs $andOperator mv terraform-docs ~/bin/ $andOperator rm -f terraform-docs.tar.gz"
         
         # Add to PATH if not already there
         wsl.exe --distribution $ubuntuDistro --exec bash -c "grep -q 'export PATH=~/bin:\$PATH' ~/.bashrc || echo 'export PATH=~/bin:\$PATH' >> ~/.bashrc"
         
         # Verify installation was successful
-        $verifyResult = wsl.exe --distribution $ubuntuDistro --exec bash -c "ls ~/bin/terraform-docs > /dev/null 2>&1 || echo 'failed'"
+        $verifyResult = wsl.exe --distribution $ubuntuDistro --exec bash -c "ls ~/bin/terraform-docs >/dev/null 2>&1 || echo 'failed'"
         if ($verifyResult -eq "failed") {
             Write-Host "Warning: Failed to install terraform-docs automatically. Please install manually in your WSL distribution." -ForegroundColor Yellow
             Write-Host "Skipping terraform-docs generation." -ForegroundColor Yellow
@@ -534,7 +567,7 @@ try {
     }
 
     Write-Host "Running terraform-docs in directory: $wslPath" -ForegroundColor Cyan
-    $output = wsl.exe --distribution $ubuntuDistro --exec bash -c "cd '$wslPath' && export PATH=~/bin:\$PATH && terraform-docs markdown table . > README_GENERATED.md 2>&1"
+    $output = wsl.exe --distribution $ubuntuDistro --exec bash -c "cd '$wslPath' $andOperator export PATH=~/bin:\$PATH $andOperator terraform-docs markdown table . > README_GENERATED.md"
     $status = $LASTEXITCODE
     if ($status -ne 0) {
         Write-Host "Warning: terraform-docs had issues: $output" -ForegroundColor Yellow
@@ -542,7 +575,7 @@ try {
         Write-Host "terraform-docs completed successfully." -ForegroundColor Green
         Write-Host "Documentation generated to: README_GENERATED.md" -ForegroundColor Cyan
         # Check if the file was actually created
-        $fileCheck = wsl.exe --distribution $ubuntuDistro --exec bash -c "test -f '$wslPath/README_GENERATED.md' && echo 'exists' || echo 'missing'"
+        $fileCheck = wsl.exe --distribution $ubuntuDistro --exec bash -c "test -f '$wslPath/README_GENERATED.md' $andOperator echo 'exists' $orOperator echo 'missing'"
         if ($fileCheck -eq "missing") {
             Write-Host "Warning: README_GENERATED.md file was not created. Check for errors in terraform-docs execution." -ForegroundColor Yellow
         } else {
@@ -555,27 +588,100 @@ try {
     Write-Host "Error running terraform-docs: $_" -ForegroundColor Red
 }
 
-# Step 4: Validate module structure (if not skipped)
+# Step 4: Run Super-Linter for README.md analysis
+if (-not $SkipSuperLinter) {
+    Write-Host "`nStep 4: Running Super-Linter for README.md analysis..." -ForegroundColor Yellow
+    try {
+        # Check if Docker is available
+        $dockerCheck = wsl.exe --distribution $ubuntuDistro --exec bash -c "command -v docker >/dev/null 2>&1 || echo 'not-installed'"
+        if ($dockerCheck -eq "not-installed") {
+            Write-Host "Docker is not installed in WSL. Installing Docker..." -ForegroundColor Cyan            # Install Docker in WSL
+            Write-Host "Installing Docker in WSL..." -ForegroundColor Cyan
+            wsl.exe --distribution $ubuntuDistro --exec bash -c "sudo apt-get update"
+            wsl.exe --distribution $ubuntuDistro --exec bash -c "sudo apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release"
+            wsl.exe --distribution $ubuntuDistro --exec bash -c "curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg"
+            wsl.exe --distribution $ubuntuDistro --exec bash -c "echo 'deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \$(lsb_release -cs) stable' | sudo tee /etc/apt/sources.list.d/docker.list >/dev/null"
+            wsl.exe --distribution $ubuntuDistro --exec bash -c "sudo apt-get update"
+            wsl.exe --distribution $ubuntuDistro --exec bash -c "sudo apt-get install -y docker-ce docker-ce-cli containerd.io"
+            
+            # Start Docker service
+            wsl.exe --distribution $ubuntuDistro --exec bash -c "sudo service docker start"
+            
+            # Verify Docker installation
+            $dockerVerify = wsl.exe --distribution $ubuntuDistro --exec bash -c "command -v docker >/dev/null 2>&1 || echo 'failed'"
+            if ($dockerVerify -eq "failed") {
+                Write-Host "Warning: Failed to install Docker automatically. Skipping Super-Linter analysis." -ForegroundColor Yellow
+                Write-Host "Note: You can install Docker manually in WSL to enable comprehensive README.md linting." -ForegroundColor Yellow
+            } else {
+                Write-Host "Docker installed successfully in WSL." -ForegroundColor Green
+            }
+        }
+        
+        # Check if README.md exists before running superlinter
+        $readmeCheck = wsl.exe --distribution $ubuntuDistro --exec bash -c "test -f '$wslPath/README.md' $andOperator echo 'exists' $orOperator echo 'missing'"
+        if ($readmeCheck -eq "missing") {
+            Write-Host "Warning: README.md file not found. Skipping Super-Linter analysis." -ForegroundColor Yellow
+        } else {
+            Write-Host "Running Super-Linter on README.md..." -ForegroundColor Cyan
+            
+            # Ensure Docker service is running
+            wsl.exe --distribution $ubuntuDistro --exec bash -c "sudo service docker start >/dev/null 2>&1"
+              # Run Super-Linter specifically for markdown files
+            $dockerCommand = "cd '$wslPath' $andOperator sudo docker run --rm -e RUN_LOCAL=true -e VALIDATE_ALL_CODEBASE=false -e VALIDATE_MARKDOWN=true -e VALIDATE_NATURAL_LANGUAGE=true -e DEFAULT_BRANCH=main -e FILTER_REGEX_INCLUDE='.*README\.md$' -e LOG_LEVEL=WARN -v '${wslPath}:/tmp/lint' github/super-linter:latest"
+            $superlinterOutput = wsl.exe --distribution $ubuntuDistro --exec bash -c $dockerCommand
+            
+            $superlinterStatus = $LASTEXITCODE
+            
+            # Parse and display results
+            if ($superlinterOutput -match "ERROR.*README\.md") {
+                Write-Host "Super-Linter found issues in README.md:" -ForegroundColor Yellow
+                # Extract and display relevant error lines
+                $errorLines = $superlinterOutput -split "`n" | Where-Object { $_ -match "(ERROR|WARN).*README\.md" }
+                foreach ($errorLine in $errorLines) {
+                    Write-Host "  $errorLine" -ForegroundColor Red
+                }
+            } elseif ($superlinterStatus -eq 0) {
+                Write-Host "✓ Super-Linter analysis completed successfully - README.md meets quality standards" -ForegroundColor Green
+            } else {
+                Write-Host "Super-Linter completed with warnings. Check the output above for details." -ForegroundColor Yellow
+            }
+            
+            # Provide recommendations
+            Write-Host "`nREADME.md Quality Recommendations:" -ForegroundColor Cyan
+            Write-Host "• Ensure proper markdown syntax and formatting" -ForegroundColor Gray
+            Write-Host "• Use consistent heading levels (# ## ###)" -ForegroundColor Gray
+            Write-Host "• Include proper code block language specifications" -ForegroundColor Gray
+            Write-Host "• Verify all links are valid and accessible" -ForegroundColor Gray
+            Write-Host "• Check for spelling and grammar issues" -ForegroundColor Gray
+            Write-Host "• Follow markdown best practices for readability" -ForegroundColor Gray
+        }
+    } catch {
+        Write-Host "Error running Super-Linter: $_" -ForegroundColor Red
+        Write-Host "Note: Super-Linter requires Docker to be available in your WSL environment." -ForegroundColor Yellow
+    }
+} else {
+    Write-Host "`nStep 4: Super-Linter analysis skipped (SkipSuperLinter parameter provided)" -ForegroundColor Gray
+}
+
+# Step 5: Validate module structure (if not skipped)
 if (-not $SkipValidation) {
-    Write-Host "`nStep 4: Validating module structure..." -ForegroundColor Yellow
+    Write-Host "`nStep 5: Validating module structure..." -ForegroundColor Yellow
     try {
         # Define expected files for a standard Terraform module
         $expectedFiles = @("main.tf", "variables.tf", "outputs.tf", "README.md")
-        $recommendedFiles = @("required_providers.tf", "versions.tf", "examples/", "test/")
-          # Check for expected files
+        $recommendedFiles = @("required_providers.tf", "versions.tf", "examples/", "test/")          # Check for expected files
         Write-Host "Checking for essential module files..." -ForegroundColor Cyan        
         foreach ($file in $expectedFiles) {
-            $fileCheck = wsl.exe --distribution $ubuntuDistro --exec bash -c "test -e '$wslPath/$file' && echo 'exists' || echo 'missing'"
+            $fileCheck = wsl.exe --distribution $ubuntuDistro --exec bash -c "test -e '$wslPath/$file' $andOperator echo 'exists' $orOperator echo 'missing'"
             if ($fileCheck -eq "missing") {
                 Write-Host "Warning: Essential file '$file' is missing from the module." -ForegroundColor Yellow
             } else {
                 Write-Host "Essential file '$file' exists." -ForegroundColor Green
             }
-        }
-          # Check for recommended files
+        }          # Check for recommended files
         Write-Host "`nChecking for recommended module files/directories..." -ForegroundColor Cyan
         foreach ($file in $recommendedFiles) {
-            $fileCheck = wsl.exe --distribution $ubuntuDistro --exec bash -c "test -e '$wslPath/$file' && echo 'exists' || echo 'missing'"
+            $fileCheck = wsl.exe --distribution $ubuntuDistro --exec bash -c "test -e '$wslPath/$file' $andOperator echo 'exists' $orOperator echo 'missing'"
             if ($fileCheck -eq "missing") {
                 Write-Host "Note: Recommended file/directory '$file' is missing from the module." -ForegroundColor Gray
             } else {
@@ -640,11 +746,13 @@ Write-Host @"
 
 📄 OUTPUT FILES GENERATED:
    • README_GENERATED.md - Module documentation from terraform-docs
+$(if (-not $SkipSuperLinter) { "   • Super-Linter analysis - README.md quality and style report" })
 
 🔧 TOOLS USED:
    • terraform fmt - Code formatting
    • tflint - Static analysis and linting
    • terraform-docs - Documentation generation
+$(if (-not $SkipSuperLinter) { "   • super-linter - README.md quality analysis" })
 $(if (-not $SkipValidation) { "   • Structure validation - File organization check" })
 $(if ($AzureModuleCheck) { "   • Azure compliance check - Marketplace readiness" })
 
@@ -661,6 +769,7 @@ $(if ($AzureModuleCheck) { "   • Azure compliance check - Marketplace readines
 📈 IMPROVE YOUR MODULE:
    • Review any linting warnings above
    • Check README_GENERATED.md for documentation gaps
+$(if (-not $SkipSuperLinter) { "   • Address any Super-Linter recommendations for README.md" })
 $(if ($AzureModuleCheck -and $complianceScore -lt 80) { "   • Address Azure compliance requirements (current: $complianceScore%)" })
    • Add more comprehensive examples and tests
 
