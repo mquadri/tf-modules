@@ -657,6 +657,7 @@ try {    # Check if terraform-docs is installed, install to user bin if not
 if (-not $SkipSuperLinter) {
     Write-Host "`nStep 4: Running Super-Linter for README.md analysis..." -ForegroundColor Yellow
     try {
+<<<<<<< HEAD
         # Check if Docker is available
         $dockerCheck = wsl.exe --distribution $ubuntuDistro --exec bash -c "command -v docker $orOperator echo 'not-installed'"
         
@@ -682,6 +683,8 @@ if (-not $SkipSuperLinter) {
             }
         }
         
+=======
+>>>>>>> 2327a5d241e4e5b020a16e6791bbc74a38dea49c
         # Check if README.md exists before running superlinter
         $readmeCheck = wsl.exe --distribution $ubuntuDistro --exec bash -c "test -f '$wslPath/README.md' $andOperator echo 'exists' $orOperator echo 'missing'"
         if ($readmeCheck -eq "missing") {
@@ -692,10 +695,16 @@ if (-not $SkipSuperLinter) {
             $dockerStartCmd = "sudo service docker start"
             wsl.exe --distribution $ubuntuDistro --exec bash -c $dockerStartCmd
             
+<<<<<<< HEAD
             # Initialize a temporary Git repository if one doesn't exist to satisfy Super-Linter requirements
             Write-Host "Setting up Git repository for Super-Linter..." -ForegroundColor Cyan
             $gitInitCmd = "cd '$wslPath' $andOperator if [ ! -d .git ]; then git init $andOperator git config user.email 'terraform-check@local.dev' $andOperator git config user.name 'Terraform Quality Check' $andOperator git add . $andOperator git commit -m 'Initial commit for linting'; fi"
             wsl.exe --distribution $ubuntuDistro --exec bash -c $gitInitCmd
+=======
+              # Run Super-Linter specifically for markdown files
+            $dockerCommand = "cd '$wslPath' $andOperator sudo docker run --rm -e RUN_LOCAL=true -e VALIDATE_ALL_CODEBASE=false -e VALIDATE_MARKDOWN=true -e VALIDATE_NATURAL_LANGUAGE=true -e DEFAULT_BRANCH=main -e FILTER_REGEX_INCLUDE='.*README\.md$' -e LOG_LEVEL=WARN -v '${wslPath}:/tmp/lint' github/super-linter:latest"
+            $superlinterOutput = wsl.exe --distribution $ubuntuDistro --exec bash -c $dockerCommand
+>>>>>>> 2327a5d241e4e5b020a16e6791bbc74a38dea49c
             
             # Verify Git repository was created
             $gitVerifyCmd = "cd '$wslPath' $andOperator git status $andOperator echo 'success' $orOperator echo 'failed'"
