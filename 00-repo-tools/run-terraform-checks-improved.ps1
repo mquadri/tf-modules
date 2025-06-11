@@ -402,8 +402,9 @@ function Test-AzureModuleCriterion {
     
         $percentCompliance = [math]::Round(($passCount / $totalCount) * 100)
     $reqsText = "requirements met"
-    $complianceMessage = "Azure Terraform Module Catalog Criterion Compliance: $percentCompliance% ($passCount/$totalCount $reqsText)"
-    Write-Host "`n$complianceMessage" -ForegroundColor $(if ($percentCompliance -ge 80) { "Green" } elseif ($percentCompliance -ge 60) { "Yellow" } else { "Red" })
+    $complianceMessage = "Azure Terraform Module Catalog Criterion Compliance: $($percentCompliance)% ($($passCount)/$($totalCount) $($reqsText))"
+    Write-Host "`n"
+    Write-Host $complianceMessage -ForegroundColor $(if ($percentCompliance -ge 80) { "Green" } elseif ($percentCompliance -ge 60) { "Yellow" } else { "Red" })
     
     return $percentCompliance
 } # Closing brace for function Test-AzureModuleCriterion
@@ -509,7 +510,7 @@ try {# Check if terraform is installed
 # Step 2: Run tflint
 Write-Host "`nStep 2: Running tflint..." -ForegroundColor Yellow
 try {
-    $tflintCmd = "command -v tflint >/dev/null 2>&1 $orOperator echo 'not-installed'"
+    $tflintCmd = "command -v tflint `>/dev/null 2`>`&1 $orOperator echo 'not-installed'"
     $tflintResult = wsl.exe --distribution $ubuntuDistro --exec bash -c $tflintCmd
     if ($tflintResult -eq "not-installed") {
         Write-Host "tflint is not installed. Installing now..." -ForegroundColor Cyan
@@ -544,7 +545,7 @@ try {
 # Step 3: Run terraform-docs
 Write-Host "`nStep 3: Running terraform-docs..." -ForegroundColor Yellow
 try {    # Check if terraform-docs is installed, install to user bin if not
-    $terraformDocsCmd = "command -v terraform-docs >/dev/null 2>&1 $orOperator echo 'not-installed'"
+    $terraformDocsCmd = "command -v terraform-docs `>/dev/null 2`>`&1 $orOperator echo 'not-installed'"
     $terraformDocsResult = wsl.exe --distribution $ubuntuDistro --exec bash -c $terraformDocsCmd
     if ($terraformDocsResult -eq "not-installed") {
         Write-Host "terraform-docs is not installed. Installing now..." -ForegroundColor Cyan
