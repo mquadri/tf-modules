@@ -592,31 +592,6 @@ try {    # Check if terraform-docs is installed, install to user bin if not
 if (-not $SkipSuperLinter) {
     Write-Host "`nStep 4: Running Super-Linter for README.md analysis..." -ForegroundColor Yellow
     try {
-        # Check if Docker is available
-        $dockerCheck = wsl.exe --distribution $ubuntuDistro --exec bash -c "command -v docker >/dev/null 2>&1 || echo 'not-installed'"
-        if ($dockerCheck -eq "not-installed") {
-            Write-Host "Docker is not installed in WSL. Installing Docker..." -ForegroundColor Cyan            # Install Docker in WSL
-            Write-Host "Installing Docker in WSL..." -ForegroundColor Cyan
-            wsl.exe --distribution $ubuntuDistro --exec bash -c "sudo apt-get update"
-            wsl.exe --distribution $ubuntuDistro --exec bash -c "sudo apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release"
-            wsl.exe --distribution $ubuntuDistro --exec bash -c "curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg"
-            wsl.exe --distribution $ubuntuDistro --exec bash -c "echo 'deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \$(lsb_release -cs) stable' | sudo tee /etc/apt/sources.list.d/docker.list >/dev/null"
-            wsl.exe --distribution $ubuntuDistro --exec bash -c "sudo apt-get update"
-            wsl.exe --distribution $ubuntuDistro --exec bash -c "sudo apt-get install -y docker-ce docker-ce-cli containerd.io"
-            
-            # Start Docker service
-            wsl.exe --distribution $ubuntuDistro --exec bash -c "sudo service docker start"
-            
-            # Verify Docker installation
-            $dockerVerify = wsl.exe --distribution $ubuntuDistro --exec bash -c "command -v docker >/dev/null 2>&1 || echo 'failed'"
-            if ($dockerVerify -eq "failed") {
-                Write-Host "Warning: Failed to install Docker automatically. Skipping Super-Linter analysis." -ForegroundColor Yellow
-                Write-Host "Note: You can install Docker manually in WSL to enable comprehensive README.md linting." -ForegroundColor Yellow
-            } else {
-                Write-Host "Docker installed successfully in WSL." -ForegroundColor Green
-            }
-        }
-        
         # Check if README.md exists before running superlinter
         $readmeCheck = wsl.exe --distribution $ubuntuDistro --exec bash -c "test -f '$wslPath/README.md' $andOperator echo 'exists' $orOperator echo 'missing'"
         if ($readmeCheck -eq "missing") {
@@ -624,8 +599,6 @@ if (-not $SkipSuperLinter) {
         } else {
             Write-Host "Running Super-Linter on README.md..." -ForegroundColor Cyan
             
-            # Ensure Docker service is running
-            wsl.exe --distribution $ubuntuDistro --exec bash -c "sudo service docker start >/dev/null 2>&1"
               # Run Super-Linter specifically for markdown files
             $dockerCommand = "cd '$wslPath' $andOperator sudo docker run --rm -e RUN_LOCAL=true -e VALIDATE_ALL_CODEBASE=false -e VALIDATE_MARKDOWN=true -e VALIDATE_NATURAL_LANGUAGE=true -e DEFAULT_BRANCH=main -e FILTER_REGEX_INCLUDE='.*README\.md$' -e LOG_LEVEL=WARN -v '${wslPath}:/tmp/lint' github/super-linter:latest"
             $superlinterOutput = wsl.exe --distribution $ubuntuDistro --exec bash -c $dockerCommand
