@@ -193,9 +193,9 @@ function Show-TerraformChecksHelp {
     Write-Host "     .\run-terraform-checks-fixed.ps1 -ModulePath `".\modules\network`" -SkipValidation" -ForegroundColor Gray
 
     Write-Host "`n🔧 " -ForegroundColor Blue -NoNewline
-    Write-Host "FEATURES & CAPABILITIES:" -ForegroundColor White -BackgroundColor DarkBlue
+    Write-Host "FEATURES '&' CAPABILITIES:" -ForegroundColor White -BackgroundColor DarkBlue
       Write-Host "`n   ✅ Automatic Code Formatting (terraform fmt)" -ForegroundColor Green
-    Write-Host "   ✅ Static Analysis & Linting (tflint)" -ForegroundColor Green
+    Write-Host "   ✅ Static Analysis '&' Linting (tflint)" -ForegroundColor Green
     Write-Host "   🔄 Optional Documentation Generation (terraform-docs)" -ForegroundColor Cyan
     Write-Host "   ✅ Module Structure Validation" -ForegroundColor Green
     Write-Host "   ✅ Azure Module Catalog Criterion Compliance" -ForegroundColor Green
@@ -204,7 +204,7 @@ function Show-TerraformChecksHelp {
     Write-Host "   ✅ Cross-Platform Path Handling" -ForegroundColor Green
 
     Write-Host "`n🎯 " -ForegroundColor Magenta -NoNewline
-    Write-Host "AZURE COMPLIANCE REQUIREMENTS (9 CRITERIA):" -ForegroundColor White -BackgroundColor DarkMagenta
+    Write-Host "AZURE COMPLIANCE REQUIREMENTS (9 'CRITERIA'):" -ForegroundColor White -BackgroundColor DarkMagenta
     
     Write-Host "`n   1. 📁 Provider Configuration" -ForegroundColor Yellow -NoNewline
     Write-Host " - required_providers.tf with version constraints" -ForegroundColor Gray
@@ -253,6 +253,7 @@ function Show-TerraformChecksHelp {
     Write-Host "╚════════════════════════════════════════════════════════════════╝" -ForegroundColor DarkGray
     Write-Host ""
 }
+}
 
 # Enhanced Completion Summary Function
 function Show-CompletionSummary {
@@ -300,7 +301,8 @@ function Show-CompletionSummary {
         } else {
             Write-Host "✅ Completed" -ForegroundColor Green
         }
-    }    Write-Host "`n📋 " -ForegroundColor Green -NoNewline
+    } # Closing brace for if ($AzureModuleCheck)
+    Write-Host "`n📋 " -ForegroundColor Green -NoNewline
     Write-Host "GENERATED FILES:" -ForegroundColor White -BackgroundColor DarkGreen
     
     if ($GenerateDocumentation) {
@@ -456,7 +458,7 @@ function Test-AzureModuleCriterion {
     Write-Host "╚═══════════════════════════════════════════════════════════════════════════════╝" -ForegroundColor DarkBlue
 
     Write-Host "`n🏆 " -ForegroundColor Yellow -NoNewline
-    Write-Host "Evaluating Azure Marketplace readiness (9 requirements)..." -ForegroundColor White
+    Write-Host "Evaluating Azure Marketplace readiness (9 'requirements')..." -ForegroundColor White
     
     # Define requirements as a hashtable for easier handling
     $requirementsList = @(
@@ -590,6 +592,7 @@ function Test-AzureModuleCriterion {
     }
     
     return $percentCompliance
+}
 }
 
 # Check if module directory exists
