@@ -402,8 +402,8 @@ function Test-AzureModuleCriterion {
     
         $percentCompliance = [math]::Round(($passCount / $totalCount) * 100)
     $reqsText = "requirements met"
-    $complianceMessage = "Azure Terraform Module Catalog Criterion Compliance: $($percentCompliance)% ($($passCount)/$($totalCount) $($reqsText))"
-    Write-Host "`n"
+    $complianceMessage = "Azure Terraform Module Catalog Criterion Compliance: " + $percentCompliance + "% (" + $passCount + "/" + $totalCount + " " + $reqsText + ")"
+    Write-Host ([Environment]::NewLine)
     Write-Host $complianceMessage -ForegroundColor $(if ($percentCompliance -ge 80) { "Green" } elseif ($percentCompliance -ge 60) { "Yellow" } else { "Red" })
     
     return $percentCompliance
@@ -557,10 +557,10 @@ try {    # Check if terraform-docs is installed, install to user bin if not
         wsl.exe --distribution $ubuntuDistro --exec bash -c "curl -sSLo ./terraform-docs.tar.gz https://terraform-docs.io/dl/v0.16.0/terraform-docs-v0.16.0-linux-amd64.tar.gz $andOperator tar -xzf terraform-docs.tar.gz $andOperator chmod +x terraform-docs $andOperator mv terraform-docs ~/bin/ $andOperator rm -f terraform-docs.tar.gz"
 
         # Add to PATH if not already there
-        wsl.exe --distribution $ubuntuDistro --exec bash -c "grep -q 'export PATH=~/bin:\$PATH' ~/.bashrc || echo 'export PATH=~/bin:\$PATH' >> ~/.bashrc"
+        wsl.exe --distribution $ubuntuDistro --exec bash -c "grep -q 'export PATH=~/bin:\$PATH' ~/.bashrc $orOperator echo 'export PATH=~/bin:\$PATH' >> ~/.bashrc"
         
         # Verify installation was successful
-        $verifyResult = wsl.exe --distribution $ubuntuDistro --exec bash -c "ls ~/bin/terraform-docs >/dev/null 2>&1 || echo 'failed'"
+        $verifyResult = wsl.exe --distribution $ubuntuDistro --exec bash -c "ls ~/bin/terraform-docs \`>/dev/null 2\`>\`&1 $orOperator echo 'failed'"
         if ($verifyResult -eq "failed") {
             Write-Host "Warning: Failed to install terraform-docs automatically. Please install manually in your WSL distribution." -ForegroundColor Yellow
             Write-Host "Skipping terraform-docs generation." -ForegroundColor Yellow
