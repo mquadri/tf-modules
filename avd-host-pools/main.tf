@@ -1,8 +1,8 @@
 locals {
   mandatory_tags = {
-    app_id              = var.app_id
-    environment         = var.environment
-    msftmigration       = var.msftmigration
+    app_id        = var.app_id
+    environment   = var.environment
+    msftmigration = var.msftmigration
   }
 }
 
@@ -38,5 +38,5 @@ module "avm-res-desktopvirtualization-hostpool" {
   role_assignments                                           = each.value.role_assignments
   tracing_tags_enabled                                       = each.value.tracing_tags_enabled
   tracing_tags_prefix                                        = each.value.tracing_tags_prefix
-  tags                                                       = merge(local.mandatory_tags, try(each.value.tags,{}))
+  tags                                                       = merge(local.mandatory_tags, try(each.value.tags, {}))
 }

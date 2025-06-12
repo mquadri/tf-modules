@@ -1,8 +1,8 @@
 locals {
   mandatory_tags = {
-    app_id              = var.app_id
-    environment         = var.environment
-    msftmigration       = var.msftmigration
+    app_id        = var.app_id
+    environment   = var.environment
+    msftmigration = var.msftmigration
   }
 }
 
@@ -12,7 +12,7 @@ resource "azurerm_storage_sync" "this" {
   resource_group_name     = each.value.resource_group_name
   location                = each.value.location
   incoming_traffic_policy = each.value.incoming_traffic_policy
-  tags                    = merge(local.mandatory_tags,try(each.value.tags,{}))
+  tags                    = merge(local.mandatory_tags, try(each.value.tags, {}))
 }
 
 resource "azurerm_storage_sync_group" "this" {

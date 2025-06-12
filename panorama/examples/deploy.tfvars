@@ -44,7 +44,7 @@ panorama_instances = {
       username                        = "panadmin"
       password                        = null
       disable_password_authentication = true
-      ssh_keys = []
+      ssh_keys                        = []
     }
   }
 }

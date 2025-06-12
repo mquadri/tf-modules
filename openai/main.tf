@@ -15,7 +15,7 @@ resource "azurerm_cognitive_account" "this" {
   fqdns                         = var.fqdns
   local_auth_enabled            = var.local_auth_enabled    # Disabled to conform with the Security GuardRails
   custom_subdomain_name         = var.custom_subdomain_name # Required if network acl is set
-  tags                          =  merge(local.mandatory_tags, try(var.tags,{}))
+  tags                          = merge(local.mandatory_tags, try(var.tags, {}))
 
   network_acls {
     default_action = var.network_acls_default_action
@@ -155,7 +155,7 @@ module "private-endpoint-setup" {
   ptr_records                    = var.ptr_records
   soa_record                     = var.soa_record
   srv_records                    = var.srv_records
-  tags                           = merge(local.mandatory_tags, try(var.tags,{}))
+  tags                           = merge(local.mandatory_tags, try(var.tags, {}))
   txt_records                    = var.txt_records
   virtual_network_links          = var.virtual_network_links
   private_endpoints              = var.private_endpoints

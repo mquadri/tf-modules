@@ -1,8 +1,8 @@
 locals {
   mandatory_tags = {
-    app_id              = var.app_id
-    environment         = var.environment
-    msftmigration       = var.msftmigration
+    app_id        = var.app_id
+    environment   = var.environment
+    msftmigration = var.msftmigration
   }
 }
 
@@ -13,7 +13,7 @@ resource "azurerm_shared_image_gallery" "this" {
   resource_group_name = each.value.resource_group_name
   location            = each.value.location
   description         = each.value.description
-  tags                = merge(local.mandatory_tags,try(each.value.tags,{}))
+  tags                = merge(local.mandatory_tags, try(each.value.tags, {}))
 
   dynamic "sharing" {
     for_each = each.value.sharing != null ? [each.value.sharing] : []

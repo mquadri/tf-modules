@@ -1,14 +1,14 @@
 variable "backup_vault_config" {
   description = "Configuration for data protection backup vault"
   type = object({
-    vault_name                   = string
-    resource_group_name          = string
-    datastore_type               = string
-    location                     = string
-    redundancy                   = string
-    managed_identity_type        = string # Only expects "SystemAssigned as of now"
+    vault_name            = string
+    resource_group_name   = string
+    datastore_type        = string
+    location              = string
+    redundancy            = string
+    managed_identity_type = string # Only expects "SystemAssigned as of now"
     #cross_region_restore_enabled = optional(bool)
-    tags                         = optional(map(string), {})
+    tags = optional(map(string), {})
   })
 }
 
@@ -39,7 +39,7 @@ variable "environment" {
   type        = string
 
   validation {
-    condition     = contains(["PROD", "TEST", "DEV", "SANDBOX","NON-PROD"], var.environment)
+    condition     = contains(["PROD", "TEST", "DEV", "SANDBOX", "NON-PROD"], var.environment)
     error_message = "The environment must be one of the following values: PROD, TEST, DEV, SANDBOX, NON-PROD"
   }
 }

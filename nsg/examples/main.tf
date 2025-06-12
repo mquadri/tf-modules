@@ -1,5 +1,5 @@
 module "nsg" {
-  source = "../"
+  source              = "../"
   location            = var.location
   name                = var.name
   resource_group_name = var.resource_group_name
@@ -11,6 +11,6 @@ module "nsg" {
   tags                = var.tags
   app_id              = var.app_id
   msftmigration       = var.msftmigration
-  environment         = var.environment  
+  environment         = var.environment
   timeouts            = var.timeouts
 }

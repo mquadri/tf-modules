@@ -1,43 +1,77 @@
-# tf-modules-azure-naming
-<!-- BEGIN_TF_DOCS -->
-## Requirements
+# Standard Tags Terraform Module
 
-No requirements.
+## Description
 
-## Providers
+This Terraform module generates a standardized set of Lumen tags for Azure resources. It helps ensure consistency in tagging across your Azure environment, which is crucial for cost management, governance, and operational tracking. The module takes various inputs related to application, cost, and environment, and outputs a map of tags.
 
-No providers.
+## Usage
 
-## Modules
+To use this module, include it in your Terraform configuration and provide the necessary input variables. You can then use the `tags` output of this module to apply these standard tags to your Azure resources.
 
-No modules.
+```terraform
+module "standard_tags" {
+  source = "<path_to_standard_tags_module>" // Replace with the actual path or source
 
-## Resources
+  location            = "centralus"
+  resourcetype        = "rg"
+  appid               = "APP001"
+  appname             = "MyApplication"
+  env                 = "dev"
+  costCostCenter      = "12345"
+  costVP              = "VP Name"
+  costAppOwnerTech    = "techowner@example.com"
+  costAppOwnerManager = "manager@example.com"
+  costBudgetOwner     = "budgetowner@example.com"
+  additionalcontext   = "01"
+  costDivision        = "Division Name"
+  costAllocation      = "chargeback"
+  appFunction         = "Core Function"
+  monthlyBudget       = "1000"
+  costbaseline        = "2023"
+  mal_id              = "MAL000123"
+}
 
-No resources.
+# Example of applying tags to a resource group
+resource "azurerm_resource_group" "example" {
+  name     = "rg-example-${module.standard_tags.tags.env}-${module.standard_tags.tags.appid}"
+  location = module.standard_tags.tags.costRegion // This uses the 'location' input to the tags module
+  tags     = module.standard_tags.tags
+}
+
+output "example_resource_group_tags" {
+  description = "Tags applied to the example resource group."
+  value       = azurerm_resource_group.example.tags
+}
+```
 
 ## Inputs
 
-| Name | Description | Type | Default | Required |
-|------|-------------|------|---------|:--------:|
-| <a name="input_additionalcontext"></a> [additionalcontext](#input\_additionalcontext) | used for naming purposes such as 01 or 02 | `string` | n/a | yes |
-| <a name="input_appFunction"></a> [appFunction](#input\_appFunction) | app function | `string` | n/a | yes |
-| <a name="input_appid"></a> [appid](#input\_appid) | The related application for resources. Used for tagging and naming purposes. | `string` | n/a | yes |
-| <a name="input_appname"></a> [appname](#input\_appname) | the app name for the resources.  Used for tagging and naming purposes | `string` | n/a | yes |
-| <a name="input_costAllocation"></a> [costAllocation](#input\_costAllocation) | can only be sharedcosts or chargeback | `string` | n/a | yes |
-| <a name="input_costAppOwnerManager"></a> [costAppOwnerManager](#input\_costAppOwnerManager) | The app owner manager responsible for resources. Used for tagging purposes. | `string` | n/a | yes |
-| <a name="input_costAppOwnerTech"></a> [costAppOwnerTech](#input\_costAppOwnerTech) | The app owner responsible for resources. Used for tagging and naming purposes. | `string` | n/a | yes |
-| <a name="input_costBudgetOwner"></a> [costBudgetOwner](#input\_costBudgetOwner) | The budget owner responsible for resources. Used for tagging purposes. | `string` | n/a | yes |
-| <a name="input_costCostCenter"></a> [costCostCenter](#input\_costCostCenter) | The cost center code for resources. Used for tagging and naming purposes. | `string` | n/a | yes |
-| <a name="input_costDivision"></a> [costDivision](#input\_costDivision) | cost division | `string` | n/a | yes |
-| <a name="input_costVP"></a> [costVP](#input\_costVP) | The cost vp for resources. Used for tagging purposes. | `string` | n/a | yes |
-| <a name="input_costbaseline"></a> [costbaseline](#input\_costbaseline) | year resource created | `string` | n/a | yes |
-| <a name="input_env"></a> [env](#input\_env) | The environment code the for resources. Used for tagging and naming purposes. | `string` | n/a | yes |
-| <a name="input_location"></a> [location](#input\_location) | The Azure region where resources will be deployed | `string` | n/a | yes |
-| <a name="input_monthlyBudget"></a> [monthlyBudget](#input\_monthlyBudget) | monthly budget | `string` | n/a | yes |
-| <a name="input_resourcetype"></a> [resourcetype](#input\_resourcetype) | the resource type being deployed see naming standards for example | `string` | n/a | yes |
+| Name                 | Description                                                                           | Type     | Default     | Required |
+|----------------------|---------------------------------------------------------------------------------------|----------|-------------|:--------:|
+| `location`           | The Azure region where resources will be deployed. This is used for the 'costRegion' tag. | `string` | `""`        | no       |
+| `resourcetype`       | The resource type being deployed (e.g., rg, vm, sql). Used for tagging purposes.      | `string` | `""`        | no       |
+| `appid`              | The application ID. Used for tagging and naming purposes.                             | `string` | `""`        | no       |
+| `appname`            | The application name. Used for tagging and naming purposes.                           | `string` | `""`        | no       |
+| `env`                | The environment code (e.g., dev, test, prod). Used for tagging and naming purposes.   | `string` | `""`        | no       |
+| `costCostCenter`     | The cost center code. Used for tagging and naming purposes.                           | `string` | `""`        | no       |
+| `costVP`             | The VP responsible for the cost. Used for tagging purposes.                           | `string` | `""`        | no       |
+| `costAppOwnerTech`   | The technical application owner. Used for tagging and naming purposes.                | `string` | `""`        | no       |
+| `costAppOwnerManager`| The application owner manager. Used for tagging purposes.                             | `string` | `""`        | no       |
+| `costBudgetOwner`    | The budget owner. Used for tagging purposes.                                          | `string` | `""`        | no       |
+| `additionalcontext`  | Additional context for naming (e.g., 01, 02, web, app).                               | `string` | `""`        | no       |
+| `costDivision`       | The business division. Used for tagging purposes.                                     | `string` | `""`        | no       |
+| `costAllocation`     | Cost allocation method. Must be either 'sharedcosts' or 'chargeback'.                 | `string` | `""`        | no       |
+| `appFunction`        | The function of the application or resource. Used for tagging purposes.               | `string` | `""`        | no       |
+| `monthlyBudget`      | The monthly budget allocated. Used for tagging purposes.                              | `string` | `""`        | no       |
+| `costbaseline`       | The year the resource or cost baseline was created. Used for tagging purposes.        | `string` | `""`        | no       |
+| `mal_id`             | The MAL ID for tagging purposes.                                                      | `string` | `""`        | no       |
 
 ## Outputs
 
-No outputs.
-<!-- END_TF_DOCS -->
+| Name   | Description                                       |
+|--------|---------------------------------------------------|
+| `tags` | A map of standard tags generated by the module.   |
+
+## Contributing
+
+Please refer to the main repository contribution guidelines.

@@ -1,8 +1,8 @@
 locals {
   mandatory_tags = {
-    app_id              = var.app_id
-    environment         = var.environment
-    msftmigration       = var.msftmigration
+    app_id        = var.app_id
+    environment   = var.environment
+    msftmigration = var.msftmigration
   }
 }
 
@@ -33,7 +33,7 @@ resource "azurerm_key_vault_secret" "this" {
   value           = random_password.this[each.key].result
   key_vault_id    = data.azurerm_key_vault.this[each.key].id
   content_type    = var.secret_content_type
-  tags            = merge(local.mandatory_tags,try(var.secret_tags,{}))
+  tags            = merge(local.mandatory_tags, try(var.secret_tags, {}))
   expiration_date = var.secret_expiration_date
   not_before_date = var.secret_not_before_date
   provider        = azurerm.keyVault
@@ -60,7 +60,7 @@ module "swfw-modules_panorama" {
 
   # Optional variables
   logging_disks = each.value.logging_disks
-  tags          = merge(local.mandatory_tags,try(each.value.tags,{}))
+  tags          = merge(local.mandatory_tags, try(each.value.tags, {}))
   providers = {
     azurerm = azurerm.main
   }

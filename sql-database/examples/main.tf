@@ -17,7 +17,7 @@ module "sql-database" {
   monthlyBudget       = var.monthlyBudget
   costbaseline        = var.costbaseline
   #additionalcontext   = var.additionalcontext
-  environment         = var.environment
-  app_id              = var.app_id
-  msftmigration       = var.msftmigration
+  environment   = var.environment
+  app_id        = var.app_id
+  msftmigration = var.msftmigration
 }

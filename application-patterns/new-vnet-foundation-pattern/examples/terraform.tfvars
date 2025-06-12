@@ -1,6 +1,6 @@
 prod_network_deploy = {
   vnet1 = {
-    name = "vnet-test-platform-test-eus2-02"
+    name                     = "vnet-test-platform-test-eus2-02"
     app_id                   = "test"
     appname                  = "test"
     resourcetype             = "vnet"
@@ -35,7 +35,7 @@ prod_network_deploy = {
     }
   },
   vnet2 = {
-    name = "vnet2-test-platform-test-eus2-02"
+    name                     = "vnet2-test-platform-test-eus2-02"
     app_id                   = "test"
     appname                  = "test"
     resourcetype             = "vnet"
@@ -106,7 +106,7 @@ application_resource_groups = {
 
 liftshift_network_deploy = {
   vnet1 = {
-    name = "vnet-test-ls1-test-eus2-02"
+    name                     = "vnet-test-ls1-test-eus2-02"
     app_id                   = "test"
     appname                  = "test"
     resourcetype             = "vnet"
@@ -141,7 +141,7 @@ liftshift_network_deploy = {
     }
   },
   vnet2 = {
-    name = "vnet2-test-ls2-test-eus2-02"
+    name                     = "vnet2-test-ls2-test-eus2-02"
     app_id                   = "test"
     appname                  = "test"
     resourcetype             = "vnet"

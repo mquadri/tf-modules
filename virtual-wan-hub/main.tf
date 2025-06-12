@@ -1,8 +1,8 @@
 locals {
   mandatory_tags = {
-    app_id              = var.app_id
-    environment         = var.environment
-    msftmigration       = var.msftmigration
+    app_id        = var.app_id
+    environment   = var.environment
+    msftmigration = var.msftmigration
   }
 }
 
@@ -32,5 +32,5 @@ module "avm-ptn-virtualwan" {
   disable_vpn_encryption                = each.value.disable_vpn_encryption
   office365_local_breakout_category     = each.value.office365_local_breakout_category
   resource_group_tags                   = each.value.resource_group_tags
-  tags                                  = merge(local.mandatory_tags,try(each.value.tags,{}))
+  tags                                  = merge(local.mandatory_tags, try(each.value.tags, {}))
 }

@@ -34,6 +34,6 @@ resource "azurerm_private_link_service" "this" {
     primary                    = true
   }
 
-  tags = merge(local.mandatory_tags,try(var.private_link_services_tags,{}))
+  tags = merge(local.mandatory_tags, try(var.private_link_services_tags, {}))
 
 }

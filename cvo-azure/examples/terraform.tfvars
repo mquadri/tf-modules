@@ -2,13 +2,13 @@
 keyvault_name = "cvo_keyvault_name"
 keyvault_rg   = "cvo_keyvault_rg"
 
-secret_name_refresh_token   = "cvo_refresh_token"
-secret_name_svm             = "cvo_svm_password"
-secret_name_workspace       = "cvo_workspace_id"
-secret_name_nss             = "cvo_nss_account"
-secret_name_saas            = "cvo_saas_subscription_id"
-secret_name_client          = "cvo_client_id"
-secret_subscription_id      = "cvo_subscription_id"
+secret_name_refresh_token = "cvo_refresh_token"
+secret_name_svm           = "cvo_svm_password"
+secret_name_workspace     = "cvo_workspace_id"
+secret_name_nss           = "cvo_nss_account"
+secret_name_saas          = "cvo_saas_subscription_id"
+secret_name_client        = "cvo_client_id"
+secret_subscription_id    = "cvo_subscription_id"
 
 cvo_instances = {
   "cvo-test-001-eus" = {

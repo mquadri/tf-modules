@@ -93,7 +93,7 @@ variable "environment" {
   type        = string
 
   validation {
-    condition     = contains(["PROD", "TEST", "DEV", "SANDBOX","NON-PROD"], var.environment)
+    condition     = contains(["PROD", "TEST", "DEV", "SANDBOX", "NON-PROD"], var.environment)
     error_message = "The environment must be one of the following values: PROD, TEST, DEV, SANDBOX, NON-PROD"
   }
 }
@@ -101,4 +101,18 @@ variable "environment" {
 variable "msftmigration" {
   description = "The migration tag used."
   type        = string
+}
+
+variable "mal_id" {
+  description = "The MAL ID for tagging purposes (passed to the ai-search module)."
+  type        = string
+  default     = "MALEX001" # Example default for the example
+}
+
+variable "tags" {
+  description = "A map of additional custom tags to apply at the module level (passed to the ai-search module's general tags input)."
+  type        = map(string)
+  default = {
+    ExampleCustomTag = "ExampleValue"
+  }
 }

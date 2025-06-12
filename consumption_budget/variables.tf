@@ -21,8 +21,8 @@ variable "start_date" {
 variable "budget_notifications" {
   description = "List of budget notifications"
   type = list(object({
-    operator      = string
-    threshold     = number
+    operator       = string
+    threshold      = number
     contact_emails = list(string)
 
   }))

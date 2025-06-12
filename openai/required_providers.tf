@@ -14,7 +14,7 @@ terraform {
       source = "hashicorp/azuread"
     }
     azapi = {
-      source = "Azure/azapi"
+      source  = "Azure/azapi"
       version = ">= 1.0.0"
     }
     validation = {

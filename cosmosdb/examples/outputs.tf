@@ -73,5 +73,5 @@ output "cosmos_pgsql_id" {
 
 output "pgsql_servers" {
   description = "The FQDN and name of the servers."
-  value = module.cosmos.pgsql_servers
+  value       = module.cosmos.pgsql_servers
 }

@@ -56,27 +56,27 @@ variable "application_name" {
 variable "subnet_id" {
   type        = string
   description = "the subnet id for the resource"
-  
+
 }
 
 variable "rbac_enabled" {
   type        = bool
   description = "whether to enable rbac for the key vault"
   default     = false
-  
+
 }
 
 variable "appid" {
   type        = string
   description = "the application id for the resource"
-  
+
 }
 
 variable "msftmigration" {
   type        = bool
   description = "whether to enable msft migration for the key vault"
   default     = false
-  
+
 }
 
 ############################################################

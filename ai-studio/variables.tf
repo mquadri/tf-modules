@@ -474,3 +474,9 @@ variable "msftmigration" {
   description = "The migration tag used."
   type        = string
 }
+
+variable "mal_id" {
+  description = "The MAL ID for tagging purposes."
+  type        = string
+  default     = ""
+}

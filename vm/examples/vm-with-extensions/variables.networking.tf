@@ -11,7 +11,7 @@ variable "nsg_diagnostic_settings" {
     event_hub_name                           = optional(string, null)
     marketplace_partner_resource_id          = optional(string, null)
   }))
-  default     = {}
+  default = {}
 }
 
 variable "public_ip_sku" {

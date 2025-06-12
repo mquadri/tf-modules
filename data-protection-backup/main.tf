@@ -1,8 +1,8 @@
 locals {
   mandatory_tags = {
-    app_id              = var.app_id
-    environment         = var.environment
-    msftmigration       = var.msftmigration
+    app_id        = var.app_id
+    environment   = var.environment
+    msftmigration = var.msftmigration
   }
 }
 
@@ -10,13 +10,13 @@ locals {
 # Backup Vault resource creation
 #----------------------------------------------------------
 resource "azurerm_data_protection_backup_vault" "vault1" {
-  name                         = var.backup_vault_config.vault_name
-  location                     = var.backup_vault_config.location
-  resource_group_name          = var.backup_vault_config.resource_group_name
-  datastore_type               = var.backup_vault_config.datastore_type
-  redundancy                   = var.backup_vault_config.redundancy
+  name                = var.backup_vault_config.vault_name
+  location            = var.backup_vault_config.location
+  resource_group_name = var.backup_vault_config.resource_group_name
+  datastore_type      = var.backup_vault_config.datastore_type
+  redundancy          = var.backup_vault_config.redundancy
   #cross_region_restore_enabled = var.backup_vault_config.cross_region_restore_enabled
-  tags                         = merge(local.mandatory_tags, try(var.backup_vault_config.tags,{}))
+  tags = merge(local.mandatory_tags, try(var.backup_vault_config.tags, {}))
 
   identity {
     type = var.backup_vault_config.managed_identity_type

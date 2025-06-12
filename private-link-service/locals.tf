@@ -11,8 +11,8 @@ locals {
     for config in local.frontend_ip_configurations : config.name => config.id
   }
   mandatory_tags = {
-    app_id              = var.app_id
-    environment         = var.environment
-    msftmigration       = var.msftmigration
+    app_id        = var.app_id
+    environment   = var.environment
+    msftmigration = var.msftmigration
   }
 }

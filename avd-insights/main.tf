@@ -1,8 +1,8 @@
 locals {
   mandatory_tags = {
-    app_id              = var.app_id
-    environment         = var.environment
-    msftmigration       = var.msftmigration
+    app_id        = var.app_id
+    environment   = var.environment
+    msftmigration = var.msftmigration
   }
 }
 
@@ -19,7 +19,7 @@ module "avm-ptn-avd-lza-insights" {
   monitor_data_collection_rule_destinations                            = each.value.monitor_data_collection_rule_destinations
   monitor_data_collection_rule_data_sources                            = each.value.monitor_data_collection_rule_data_sources
   monitor_data_collection_rule_timeouts                                = each.value.monitor_data_collection_rule_timeouts
-  monitor_data_collection_rule_tags                                    = merge(local.mandatory_tags, try(each.value.monitor_data_collection_rule_tags,{}))
+  monitor_data_collection_rule_tags                                    = merge(local.mandatory_tags, try(each.value.monitor_data_collection_rule_tags, {}))
   monitor_data_collection_rule_stream_declaration                      = each.value.monitor_data_collection_rule_stream_declaration
   monitor_data_collection_rule_identity                                = each.value.monitor_data_collection_rule_identity
   monitor_data_collection_rule_description                             = each.value.monitor_data_collection_rule_description

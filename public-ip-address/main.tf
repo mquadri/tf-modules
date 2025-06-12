@@ -1,8 +1,8 @@
 locals {
   mandatory_tags = {
-    app_id              = var.app_id
-    environment         = var.environment
-    msftmigration       = var.msftmigration
+    app_id        = var.app_id
+    environment   = var.environment
+    msftmigration = var.msftmigration
   }
 }
 
@@ -24,11 +24,11 @@ module "avm-res-network-publicipaddress" {
   reverse_fqdn            = each.value.reverse_fqdn
   public_ip_prefix_id     = each.value.public_ip_prefix_id
   idle_timeout_in_minutes = each.value.idle_timeout_in_minutes
-  ip_tags                 = merge(local.mandatory_tags,try(each.value.ip_tags,{}))
+  ip_tags                 = merge(local.mandatory_tags, try(each.value.ip_tags, {}))
   ddos_protection_mode    = each.value.ddos_protection_mode
   ddos_protection_plan_id = each.value.ddos_protection_plan_id
   edge_zone               = each.value.edge_zone
-  tags                    = merge(local.mandatory_tags,try(each.value.tags,{}))
+  tags                    = merge(local.mandatory_tags, try(each.value.tags, {}))
   lock                    = each.value.lock
   role_assignments        = each.value.role_assignments
   diagnostic_settings     = each.value.diagnostic_settings

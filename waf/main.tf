@@ -1,8 +1,8 @@
 locals {
   mandatory_tags = {
-    app_id              = var.app_id
-    environment         = var.environment
-    msftmigration       = var.msftmigration
+    app_id        = var.app_id
+    environment   = var.environment
+    msftmigration = var.msftmigration
   }
 }
 
@@ -12,7 +12,7 @@ resource "azurerm_web_application_firewall_policy" "policy" {
   name                = each.value.policy_name
   resource_group_name = each.value.resource_group_name
   location            = each.value.location
-  tags                = merge(local.mandatory_tags,try(each.value.tags,{}))
+  tags                = merge(local.mandatory_tags, try(each.value.tags, {}))
   policy_settings {
     enabled                     = each.value.policy_enabled
     mode                        = each.value.waf_mode

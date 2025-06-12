@@ -42,5 +42,5 @@ module "exr_circuit_test" {
   enable_telemetry                     = var.enable_telemetry
   app_id                               = var.app_id
   msftmigration                        = var.msftmigration
-  environment                          = var.environment 
+  environment                          = var.environment
 }

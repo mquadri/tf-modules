@@ -23,7 +23,7 @@ module "avm-res-network-azurefirewall" {
   lock                          = var.lock
   role_assignments              = var.role_assignments
   tags                          = var.tags
-  app_id         = var.app_id
-  msftmigration  = var.msftmigration
-  environment    = var.environment
+  app_id                        = var.app_id
+  msftmigration                 = var.msftmigration
+  environment                   = var.environment
 }

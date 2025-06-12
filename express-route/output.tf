@@ -22,7 +22,7 @@ output "name" {
 output "peerings" {
   description = "ExpressRoute Circuit peering configurations."
   value       = module.express_route_circuit.peerings
-  sensitive = true
+  sensitive   = true
 }
 
 output "resource_id" {

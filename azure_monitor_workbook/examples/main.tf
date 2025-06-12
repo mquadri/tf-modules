@@ -1,7 +1,7 @@
 locals {
   # tflint-ignore: terraform_unused_declarations
   naming = "${var.appname}${var.env}"
-    mandatory_tags = {
+  mandatory_tags = {
     appid               = var.appid
     appname             = var.appname
     resourcetype        = var.resourcetype
@@ -28,7 +28,7 @@ module "azureworkbook" {
   data_items          = var.data_items
   data_json_version   = var.data_json_version
   workbook_name       = var.workbook_name
-  tags                = merge(local.mandatory_tags, try(var.tags,{}))
+  tags                = merge(local.mandatory_tags, try(var.tags, {}))
   app_id              = var.app_id
   msftmigration       = var.msftmigration
   environment         = var.environment

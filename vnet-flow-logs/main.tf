@@ -1,8 +1,8 @@
 locals {
   mandatory_tags = {
-    app_id              = var.app_id
-    environment         = var.environment
-    msftmigration       = var.msftmigration
+    app_id        = var.app_id
+    environment   = var.environment
+    msftmigration = var.msftmigration
   }
 }
 
@@ -55,5 +55,5 @@ module "avm-res-network-networkwatcher" {
   role_assignments  = each.value.role_assignments
   lock              = each.value.lock
   condition_monitor = each.value.condition_monitor
-  tags              = merge(local.mandatory_tags,try(each.value.tags,{}))
+  tags              = merge(local.mandatory_tags, try(each.value.tags, {}))
 }

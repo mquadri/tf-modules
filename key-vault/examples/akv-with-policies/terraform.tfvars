@@ -20,6 +20,6 @@ costbaseline          = "2024"
 costAllocation        = "sharedcost"
 monthlyBudget         = "1000"
 subscription_id       = "43b9cb16-24cd-4291-8f00-80a1ee9420f5"
-subnet_id                = "/subscriptions/43b9cb16-24cd-4291-8f00-80a1ee9420f5/resourceGroups/rg-vnet-lakehouse-dev-eastus2-02/providers/Microsoft.Network/virtualNetworks/vnet-lakehouse-dev-eus2-02/subnets/snet-pe-lakehouse-dev-eus2-02"
-environment = "SANDBOX"
+subnet_id             = "/subscriptions/43b9cb16-24cd-4291-8f00-80a1ee9420f5/resourceGroups/rg-vnet-lakehouse-dev-eastus2-02/providers/Microsoft.Network/virtualNetworks/vnet-lakehouse-dev-eus2-02/subnets/snet-pe-lakehouse-dev-eus2-02"
+environment           = "SANDBOX"
 

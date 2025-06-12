@@ -10,7 +10,7 @@ resource "azurerm_consumption_budget_subscription" "consumption_budget" {
   subscription_id = var.subscription_id
   amount          = var.budget_amount
   time_grain      = "Monthly"
-  
+
   time_period {
     start_date = var.start_date
   }

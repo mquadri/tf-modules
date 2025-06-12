@@ -3,10 +3,10 @@ locals {
     "base" = var.base_policy_name
   } : {}
 
-    mandatory_tags = {
-    app_id              = var.app_id
-    environment         = var.environment
-    msftmigration       = var.msftmigration
+  mandatory_tags = {
+    app_id        = var.app_id
+    environment   = var.environment
+    msftmigration = var.msftmigration
   }
 
 }
@@ -43,5 +43,5 @@ module "avm-res-network-firewallpolicy" {
   firewall_policy_timeouts                          = var.firewall_policy_timeouts
   firewall_policy_tls_certificate                   = var.firewall_policy_tls_certificate
   lock                                              = var.lock
-  tags                                              = merge(local.mandatory_tags, try(var.tags,{}))
+  tags                                              = merge(local.mandatory_tags, try(var.tags, {}))
 }

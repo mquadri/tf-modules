@@ -6,9 +6,9 @@ data "azurerm_shared_image_gallery" "this" {
 
 locals {
   mandatory_tags = {
-    app_id              = var.app_id
-    environment         = var.environment
-    msftmigration       = var.msftmigration
+    app_id        = var.app_id
+    environment   = var.environment
+    msftmigration = var.msftmigration
   }
 }
 
@@ -54,5 +54,5 @@ resource "azurerm_shared_image" "this" {
   confidential_vm_supported           = each.value.confidential_vm_supported != null ? each.value.confidential_vm_supported : null
   confidential_vm_enabled             = each.value.confidential_vm_enabled != null ? each.value.confidential_vm_enabled : null
   accelerated_network_support_enabled = each.value.accelerated_network_support_enabled
-  tags                                = merge(local.mandatory_tags, try(each.value.tags,{}))
+  tags                                = merge(local.mandatory_tags, try(each.value.tags, {}))
 }

@@ -55,17 +55,17 @@ variable "panorama_instances" {
 
 variable "subscription_id" {
   description = "subcription id for panorama"
-  type = string
+  type        = string
 }
 
 variable "kv_sub_id" {
   description = "subcription id for kv"
-  type = string
+  type        = string
 }
 
 variable "tenant_id" {
   description = "tenant id for kv"
-  type = string
+  type        = string
 }
 
 # Secret Content Type (optional)
@@ -107,7 +107,7 @@ variable "environment" {
   type        = string
 
   validation {
-    condition     = contains(["PROD", "TEST", "DEV", "SANDBOX","NON-PROD"], var.environment)
+    condition     = contains(["PROD", "TEST", "DEV", "SANDBOX", "NON-PROD"], var.environment)
     error_message = "The environment must be one of the following values: PROD, TEST, DEV, SANDBOX, NON-PROD"
   }
 }
