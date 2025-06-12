@@ -404,7 +404,13 @@ function Test-AzureModuleCriterion {
     $reqsText = "requirements met"
     $complianceMessage = "Azure Terraform Module Catalog Criterion Compliance: " + $percentCompliance + "% (" + $passCount + "/" + $totalCount + " " + $reqsText + ")"
     Write-Host ([Environment]::NewLine)
-    Write-Host $complianceMessage -ForegroundColor $(if ($percentCompliance -ge 80) { "Green" } elseif ($percentCompliance -ge 60) { "Yellow" } else { "Red" })
+    $statusColor = "Red" # Default
+    if ($percentCompliance -ge 80) {
+        $statusColor = "Green"
+    } elseif ($percentCompliance -ge 60) {
+        $statusColor = "Yellow"
+    }
+    Write-Host $complianceMessage -ForegroundColor $statusColor
     
     return $percentCompliance
 } # Closing brace for function Test-AzureModuleCriterion
