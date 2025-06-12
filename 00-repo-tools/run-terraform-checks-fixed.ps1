@@ -204,7 +204,7 @@ function Show-TerraformChecksHelp {
     Write-Host "   ✅ Cross-Platform Path Handling" -ForegroundColor Green
 
     Write-Host "`n🎯 " -ForegroundColor Magenta -NoNewline
-    Write-Host "AZURE COMPLIANCE REQUIREMENTS (9 'CRITERIA'):" -ForegroundColor White -BackgroundColor DarkMagenta
+    Write-Host 'AZURE COMPLIANCE REQUIREMENTS (9 CRITERIA):' -ForegroundColor White -BackgroundColor DarkMagenta
     
     Write-Host "`n   1. 📁 Provider Configuration" -ForegroundColor Yellow -NoNewline
     Write-Host " - required_providers.tf with version constraints" -ForegroundColor Gray
@@ -242,8 +242,7 @@ function Show-TerraformChecksHelp {
     Write-Host "ADDITIONAL HELP:" -ForegroundColor White -BackgroundColor DarkBlue
       Write-Host "`n   📖 Detailed Help: " -ForegroundColor Cyan -NoNewline
     Write-Host "Get-Help .\run-terraform-checks-fixed.ps1 -Detailed" -ForegroundColor Gray
-    Write-Host "   📋 Examples Only: " -ForegroundColor Cyan -NoNewline
-    Write-Host "Get-Help .\run-terraform-checks-fixed.ps1 -Examples" -ForegroundColor Gray
+    Write-Host "   📋 Examples Only: " -ForegroundColor Cyan -NoNewline    Write-Host "Get-Help .\run-terraform-checks-fixed.ps1 -Examples" -ForegroundColor Gray
     Write-Host "   🔍 Full Help: " -ForegroundColor Cyan -NoNewline
     Write-Host "Get-Help .\run-terraform-checks-fixed.ps1 -Full" -ForegroundColor Gray
 
@@ -252,7 +251,6 @@ function Show-TerraformChecksHelp {
     Write-Host "║ 🚀 Ready to enhance your Terraform modules? Choose an option! ║" -ForegroundColor DarkGray
     Write-Host "╚════════════════════════════════════════════════════════════════╝" -ForegroundColor DarkGray
     Write-Host ""
-}
 }
 
 # Enhanced Completion Summary Function
@@ -458,7 +456,7 @@ function Test-AzureModuleCriterion {
     Write-Host "╚═══════════════════════════════════════════════════════════════════════════════╝" -ForegroundColor DarkBlue
 
     Write-Host "`n🏆 " -ForegroundColor Yellow -NoNewline
-    Write-Host "Evaluating Azure Marketplace readiness (9 'requirements')..." -ForegroundColor White
+    Write-Host 'Evaluating Azure Marketplace readiness (9 requirements)...' -ForegroundColor White
     
     # Define requirements as a hashtable for easier handling
     $requirementsList = @(
@@ -573,26 +571,23 @@ function Test-AzureModuleCriterion {
     Write-Host "`n   " -NoNewline
     Write-Host "═══════════════════════════════════════════════════════════════" -ForegroundColor Gray
     
-    Write-Host "`n   📊 COMPLIANCE SUMMARY:" -ForegroundColor Cyan
-    Write-Host "   Requirements Passed: " -ForegroundColor Yellow -NoNewline
+    Write-Host "`n   📊 COMPLIANCE SUMMARY:" -ForegroundColor Cyan    Write-Host "   Requirements Passed: " -ForegroundColor Yellow -NoNewline
     Write-Host "$passCount/$totalCount " -ForegroundColor White -NoNewline
     
     if ($percentCompliance -ge 80) {
-        Write-Host "($percentCompliance%) " -ForegroundColor Green -NoNewline
+        Write-Host "($percentCompliance" + "%) " -ForegroundColor Green -NoNewline
         Write-Host "🟢 EXCELLENT" -ForegroundColor Green
         Write-Host "   Status: Ready for Azure Marketplace! 🚀" -ForegroundColor Green
     } elseif ($percentCompliance -ge 60) {
-        Write-Host "($percentCompliance%) " -ForegroundColor Yellow -NoNewline
+        Write-Host "($percentCompliance" + "%) " -ForegroundColor Yellow -NoNewline
         Write-Host "🟡 GOOD" -ForegroundColor Yellow
         Write-Host "   Status: Minor improvements needed ⚠️" -ForegroundColor Yellow
     } else {
-        Write-Host "($percentCompliance%) " -ForegroundColor Red -NoNewline
+        Write-Host "($percentCompliance" + "%) " -ForegroundColor Red -NoNewline
         Write-Host "🔴 NEEDS WORK" -ForegroundColor Red
         Write-Host "   Status: Significant improvements required ❌" -ForegroundColor Red
     }
-    
-    return $percentCompliance
-}
+      return $percentCompliance
 }
 
 # Check if module directory exists

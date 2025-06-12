@@ -379,25 +379,24 @@ function Test-AzureModuleCriterion {
             $fileCommand = "test -f '$WslPath/$($req.File)' $andOperator echo 'exists' $orOperator echo 'missing'"
             $fileCheck = wsl.exe --distribution "$Distribution" --exec bash -c $fileCommand;
 
-            if ($fileCheck -eq "exists") {
-                if ($req.Pattern) {                    # Check for pattern in file
-                    $patternCommand = "grep -E '$($req.Pattern)' '$WslPath/$($req.File)' \`>/dev/null 2\`>\`&1 $andOperator echo 'found' $orOperator echo 'notfound'"
-                    $patternCheck = wsl.exe --distribution "$Distribution" --exec bash -c $patternCommand;
+            if ($fileCheck -eq "exists") {                if ($req.Pattern) {
+                    # Check for pattern in file
+                    $patternCommand = "grep -E '$($req.Pattern)' '$WslPath/$($req.File)' >/dev/null 2>&1 $andOperator echo 'found' $orOperator echo 'notfound'"
+                    $patternCheck = wsl.exe --distribution "$Distribution" --exec bash -c $patternCommand
                     if ($patternCheck -eq "found") {
                         Write-Host "  ✓ $($req.Name) requirement passed" -ForegroundColor Green
                         $passCount++
                     } else {
                         Write-Host "  ✗ $($req.Name) requirement failed - pattern '$($req.Pattern)' not found in $($req.File)" -ForegroundColor Red
-                    }
-                } else {
+                    }                } else {
                     # Just checking if file exists
                     Write-Host "  ✓ $($req.Name) requirement passed" -ForegroundColor Green
                     $passCount++
-                }            } else {
+                }
+            } else {
                 Write-Host "  ✗ $($req.Name) requirement failed - file '$($req.File)' not found" -ForegroundColor Red
             }
         }
-    }
     } # Closing brace for foreach ($req in $requirementsList)
     
         $percentCompliance = [math]::Round(($passCount / $totalCount) * 100)
