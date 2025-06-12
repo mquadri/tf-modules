@@ -367,7 +367,7 @@ function Test-AzureModuleCriterion {
         if ($req.IsDirectory) {
             # Directory check
             $dirCommand = "test -d '$WslPath/$($req.File)' $andOperator echo 'exists' $orOperator echo 'missing'"
-            $dirCheck = wsl.exe --distribution "$Distribution" --exec bash -c $dirCommand
+            $dirCheck = wsl.exe --distribution "$Distribution" --exec bash -c $dirCommand;
             if ($dirCheck -eq "exists") {
                 Write-Host "  ✓ $($req.Name) requirement passed" -ForegroundColor Green
                 $passCount++
@@ -377,12 +377,12 @@ function Test-AzureModuleCriterion {
         } else {
             # File and pattern check
             $fileCommand = "test -f '$WslPath/$($req.File)' $andOperator echo 'exists' $orOperator echo 'missing'"
-            $fileCheck = wsl.exe --distribution "$Distribution" --exec bash -c $fileCommand
+            $fileCheck = wsl.exe --distribution "$Distribution" --exec bash -c $fileCommand;
 
             if ($fileCheck -eq "exists") {
                 if ($req.Pattern) {                    # Check for pattern in file
-                    $patternCommand = "grep -E '$($req.Pattern)' '$WslPath/$($req.File)' >/dev/null 2>&1 $andOperator echo 'found' $orOperator echo 'notfound'"
-                    $patternCheck = wsl.exe --distribution "$Distribution" --exec bash -c $patternCommand
+                    $patternCommand = "grep -E '$($req.Pattern)' '$WslPath/$($req.File)' \`>/dev/null 2\`>\`&1 $andOperator echo 'found' $orOperator echo 'notfound'"
+                    $patternCheck = wsl.exe --distribution "$Distribution" --exec bash -c $patternCommand;
                     if ($patternCheck -eq "found") {
                         Write-Host "  ✓ $($req.Name) requirement passed" -ForegroundColor Green
                         $passCount++
